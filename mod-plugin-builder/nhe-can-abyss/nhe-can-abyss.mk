@@ -13,7 +13,7 @@
 #
 ######################################
 
-NHE_CAN_ABYSS_VERSION = 57c1fc1
+NHE_CAN_ABYSS_VERSION = 57c1fc132b3356ebb9b26cbd13d529386909cbd3
 NHE_CAN_ABYSS_SITE = $(call github,Kiwooky,NHE-Can-Abyss,$(NHE_CAN_ABYSS_VERSION))
 NHE_CAN_ABYSS_BUNDLES = nhe-can-abyss.lv2
 
