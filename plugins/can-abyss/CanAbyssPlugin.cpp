@@ -24,20 +24,16 @@ START_NAMESPACE_DISTRHO
 // warble (once per revolution, belt drift, flutter) scales with disc speed.
 // Bandwidth follows surface speed: long times and small discs are darker.
 //
-// Modern mods (New Horizon): Disc Size, Sag (tube supply droop + motor
-// slip), Hold (frozen disc that still varispeeds), and Noise Mods: separate
-// Disc / Hiss / Hum levels with a predictive gate that knows when every echo
-// will arrive, because the envelope rides the disc next to the audio.
+// Modern mods (New Horizon): Disc Size, Wear (a worn disc: speed and level
+// irregularities locked to disc position, so they repeat every revolution),
+// Sag (tube supply droop + motor slip) and Hold (a frozen disc that still
+// varispeeds). Clean: no hiss or hum, by design.
 // ---------------------------------------------------------------------------
 
 static const float    kPi       = 3.14159265358979f;
 static const uint32_t kBufSize  = 1u << 19;      // 5.4 s at 96 kHz: loop + one older revolution
 static const uint32_t kBufMask  = kBufSize - 1;
-static const uint32_t kEnvDec   = 16;            // envelope track decimation
-static const uint32_t kEnvSize  = kBufSize / kEnvDec;
-static const uint32_t kEnvMask  = kEnvSize - 1;
-static const uint32_t kTabSize  = 4096;          // disc surface, one revolution
-static const uint32_t kHumSize  = 256;
+static const uint32_t kTabSize  = 1024;          // disc wear profile, one revolution
 static const float    kWiper    = 0.9f;          // read wiper at 324 degrees
 static const uint32_t kCtl      = 16;            // control-rate block
 // warble depths as fractions of the delay (stock Wobble, stock disc)
@@ -45,6 +41,8 @@ static const float    kClipBias = 0.1f * (27.0f + 0.01f) / (27.0f + 0.09f);   //
 static const float    kWobRev   = 0.00045f;      // disc runout, once per revolution
 static const float    kWobDrift = 0.0012f;       // belt drift, 0.37 + 0.61 Hz
 static const float    kWobFlut  = 0.00004f;      // motor flutter, 3-10 Hz
+static const float    kWearPitch = 0.0012f;      // worn disc at Wear 10: speed irregularity
+static const float    kWearDip   = 0.5f;         // ... and up to -6 dB level dips
 
 static inline float clampf(float x, float lo, float hi)
 {
@@ -122,20 +120,15 @@ public:
         fParams[kTone]      = 5.0f;
         fParams[kWobble]    = 5.0f;
         fParams[kDiscSize]  = 5.0f;
+        fParams[kWear]      = 3.0f;
         fParams[kMix]       = 50.0f;
         fParams[kSag]       = 0.0f;
         fParams[kHold]      = 0.0f;
-        fParams[kNoiseMods] = 0.0f;
-        fParams[kDiscNoise] = 5.0f;
-        fParams[kHiss]      = 5.0f;
-        fParams[kHum]       = 5.0f;
-        fParams[kHumHz]     = 60.0f;
         fParams[kTails]     = 1.0f;
         fParams[kBypass]    = 0.0f;
 
         buildTables();
         std::memset(fBuf, 0, sizeof(fBuf));
-        std::memset(fEnv, 0, sizeof(fEnv));
         activate();
     }
 
@@ -145,7 +138,7 @@ protected:
     const char* getMaker()       const override { return "New Horizon Electronics"; }
     const char* getHomePage()    const override { return "https://github.com/Kiwooky/NHE-Can-Abyss"; }
     const char* getLicense()     const override { return "MIT"; }
-    uint32_t    getVersion()     const override { return d_version(1, 0, 0); }
+    uint32_t    getVersion()     const override { return d_version(1, 0, 2); }
     int64_t     getUniqueId()    const override { return d_cconst('C', 'A', 'B', 'Y'); }
 
     void initParameter(uint32_t index, Parameter& p) override
@@ -176,6 +169,9 @@ protected:
         case kDiscSize:
             p.name = "Disc Size"; p.symbol = "disc_size";
             break;
+        case kWear:
+            p.name = "Wear"; p.symbol = "wear"; p.ranges.def = 3.0f;
+            break;
         case kMix:
             p.name = "Mix"; p.symbol = "mix"; p.unit = "%";
             p.ranges.max = 100.0f; p.ranges.def = 50.0f;
@@ -188,33 +184,6 @@ protected:
             p.name = "Hold"; p.symbol = "hold";
             p.ranges.max = 1.0f; p.ranges.def = 0.0f;
             break;
-        case kNoiseMods:
-            p.hints |= kParameterIsInteger | kParameterIsBoolean;
-            p.name = "Noise Mods"; p.symbol = "noise_mods";
-            p.ranges.max = 1.0f; p.ranges.def = 0.0f;
-            break;
-        case kDiscNoise:
-            p.name = "Disc"; p.symbol = "disc_noise";
-            break;
-        case kHiss:
-            p.name = "Hiss"; p.symbol = "hiss";
-            break;
-        case kHum:
-            p.name = "Hum"; p.symbol = "hum";
-            break;
-        case kHumHz: {
-            p.hints |= kParameterIsInteger;
-            p.name = "Hum Hz"; p.symbol = "hum_hz"; p.unit = "Hz";
-            p.ranges.min = 50.0f; p.ranges.max = 60.0f; p.ranges.def = 60.0f;
-            static ParameterEnumerationValue values[2];
-            values[0].value = 50.0f; values[0].label = "50 Hz";
-            values[1].value = 60.0f; values[1].label = "60 Hz";
-            p.enumValues.count = 2;
-            p.enumValues.restrictedMode = true;
-            p.enumValues.values = values;
-            p.enumValues.deleteLater = false;
-            break;
-        }
         case kTails:
             p.hints |= kParameterIsInteger | kParameterIsBoolean;
             p.name = "Tails"; p.symbol = "tails";
@@ -242,14 +211,9 @@ protected:
         if (fSr <= 0.0f) fSr = 48000.0f;
 
         fFast    = onePoleCoef(1.0f / (2.0f * kPi * 0.010f), fSr);   // 10 ms
-        fNoiseSm = onePoleCoef(1.0f / (2.0f * kPi * 0.050f), fSr);   // 50 ms unlock glide
-        fNbFade  = onePoleCoef(1.0f / (2.0f * kPi * 0.500f), fSr);   // noise fade in bypass
         fSagAtk  = onePoleCoef(1.0f / (2.0f * kPi * 0.005f), fSr);
         fSagRel  = onePoleCoef(1.0f / (2.0f * kPi * 0.150f), fSr);
-        fEnvRel  = onePoleCoef(1.0f / (2.0f * kPi * 0.030f), fSr);
-        fGateAtk = onePoleCoef(1.0f / (2.0f * kPi * 0.002f), fSr);
-        fGateRel = onePoleCoef(1.0f / (2.0f * kPi * 0.060f), fSr);
-        fToneLp  = onePoleCoef(1500.0f, fSr);
+        fToneLp  = onePoleCoef(1200.0f, fSr);
         fDcCoef  = onePoleCoef(20.0f, fSr);
         fFlutLpC = onePoleCoef(10.0f, fSr / (float)kCtl);
         fFlutHpC = onePoleCoef(3.0f, fSr / (float)kCtl);
@@ -268,13 +232,11 @@ protected:
     void clearState()
     {
         std::memset(fBuf, 0, sizeof(fBuf));
-        std::memset(fEnv, 0, sizeof(fEnv));
-        fW = 0; fEnvMax = 0.0f; fEnvW = 0; fEnvCount = 0;
+        fW = 0;
         fReadLp.clear(); fResLp = 0.0f; fDcX = fDcY = 0.0f; fToneState = 0.0f;
-        fY = 0.0f; fEnvD = 0.0f; fSagEnv = 0.0f;
-        fOpenW = fOpenR = 1.0f;
+        fY = 0.0f; fSagEnv = 0.0f;
         fTheta = 0.0f; fDp1 = 0.0f; fDp2 = 0.3f; fFl1 = fFl2 = 0.0f;
-        fHumPh = 0.0f; fM = 0.0f;
+        fM = 0.0f;
         fHolding = false; fHoldMix = 0.0f;
         fClearPos = kBufSize; fCleared = false;
     }
@@ -291,17 +253,31 @@ protected:
         const float xRep    = clampf(fParams[kRepeat] / 10.0f, 0.0f, 1.0f);
         const float gRepeat = 1.1f * std::pow(xRep, 1.2f);
         const float resid   = 0.85f * clampf(fParams[kReverb] / 10.0f, 0.0f, 1.0f);
-        const float toneDb  = (fParams[kTone] - 5.0f) * (fParams[kTone] < 5.0f ? 1.8f : 1.2f);
-        const float toneG   = std::pow(10.0f, toneDb / 20.0f);       // -9 .. +6 dB above 1.5 kHz
-        const float wobK    = clampf(fParams[kWobble] / 5.0f, 0.0f, 2.0f);
-        const float S       = std::pow(2.0f, (clampf(fParams[kDiscSize], 0.0f, 10.0f) - 5.0f) / 5.0f);
+
+        // Tone: tilt around 1.2 kHz. Dull end: highs -24 dB, lows +3 dB.
+        // Bright end: highs +9 dB, lows -6 dB.
+        const float tn = (clampf(fParams[kTone], 0.0f, 10.0f) - 5.0f) / 5.0f;   // -1 .. 1
+        const float hiDb = tn < 0.0f ? 24.0f * tn : 9.0f * tn;
+        const float loDb = tn < 0.0f ? -3.0f * tn : -6.0f * tn;
+        const float toneHi = std::pow(10.0f, hiDb / 20.0f);
+        const float toneLo = std::pow(10.0f, loDb / 20.0f);
+
+        // Wobble: linear to stock at 5, then a steep curve to 4x at 10
+        const float kw = clampf(fParams[kWobble], 0.0f, 10.0f);
+        const float wobK = kw <= 5.0f ? kw / 5.0f : 1.0f + 3.0f * std::pow((kw - 5.0f) / 5.0f, 1.5f);
+        // Disc Size: 0 = quarter size, 5 = stock, 10 = double
+        const float ks = clampf(fParams[kDiscSize], 0.0f, 10.0f);
+        const float S  = ks < 5.0f ? std::pow(2.0f, (ks - 5.0f) / 2.5f) : std::pow(2.0f, (ks - 5.0f) / 5.0f);
+        // Wear: light at 3, beaten-up at 10; defects matter more on a small disc
+        const float xw = clampf(fParams[kWear] / 10.0f, 0.0f, 1.0f);
+        const float wearP = kWearPitch * xw * xw / S;
+        const float wearA = kWearDip * xw * xw;
+
         const float m       = clampf(fParams[kMix] / 100.0f, 0.0f, 1.0f);
         const float mixDry  = clampf(2.0f * (1.0f - m), 0.0f, 1.0f);
         const float mixWet  = clampf(2.0f * m, 0.0f, 1.0f);
         const float xSag    = clampf(fParams[kSag] / 10.0f, 0.0f, 1.0f);
         const bool  hold    = fParams[kHold] > 0.5f;
-        const bool  unlock  = fParams[kNoiseMods] > 0.5f;
-        const float humHz   = fParams[kHumHz] < 55.0f ? 50.0f : 60.0f;
         const bool  tails   = fParams[kTails] > 0.5f;
         const bool  bypass  = fParams[kBypass] > 0.5f;
 
@@ -309,23 +285,17 @@ protected:
         const float pTarget = timeMs * 0.001f * sr / kWiper;
         const float motorK  = onePoleCoef(1.0f / (2.0f * kPi * 0.2f * S), sr);
         const float wobDepth = wobK / S;
-
-        // noise knobs: locked = stock (5)
-        const float tDisc = unlock ? clampf(fParams[kDiscNoise], 0.0f, 10.0f) : 5.0f;
-        const float tHiss = unlock ? clampf(fParams[kHiss],      0.0f, 10.0f) : 5.0f;
-        const float tHum  = unlock ? clampf(fParams[kHum],       0.0f, 10.0f) : 5.0f;
+        const float slipMax  = clampf(0.05f / S, 0.0f, 0.15f);
 
         const float inTarget  = bypass ? 0.0f : 1.0f;
         const float wetTarget = (bypass && !tails) ? 0.0f : 1.0f;
-        const float nbTarget  = bypass ? 0.0f : 1.0f;
 
         if (fFirstRun) {
             // controls arrive with the first run(): start there, no glides
             fFirstRun = false;
             fP = pTarget;
-            fInGain = inTarget; fWetGain = wetTarget; fNb = nbTarget;
-            fKDisc = tDisc; fKHiss = tHiss; fKHum = tHum;
-            fToneG = toneG;
+            fInGain = inTarget; fWetGain = wetTarget;
+            fToneHi = toneHi; fToneLo = toneLo;
             fHolding = hold; fHoldMix = 0.0f;
             if (hold) startHold();
         }
@@ -342,19 +312,16 @@ protected:
         if (fClearPos < kBufSize) {
             const uint32_t n = 16384;
             std::memset(fBuf + fClearPos, 0, n * sizeof(float));
-            std::memset(fEnv + fClearPos / kEnvDec, 0, (n / kEnvDec) * sizeof(float));
             fClearPos += n;
             if (fClearPos >= kBufSize) {
                 fCleared = true;
-                fReadLp.clear(); fResLp = 0.0f; fY = 0.0f; fEnvD = 0.0f;
+                fReadLp.clear(); fResLp = 0.0f; fY = 0.0f;
             }
         }
 
         // hold engage / release
         if (hold && !fHolding) { fHolding = true; startHold(); }
         if (!hold && fHolding) { fHolding = false; }
-
-        const float humInc = humHz / sr;
 
         for (uint32_t i = 0; i < frames; ++i) {
             // --- control rate -------------------------------------------
@@ -364,17 +331,12 @@ protected:
                 const float fc = clampf(3500.0f * std::sqrt(S * 0.35f / T), 800.0f, 8000.0f);
                 fReadLp.setLowpass(fc, 0.6f, sr);
                 fResCoef = onePoleCoef(1.5f * fc, sr);
-                noiseShape(fKDisc, fLvDisc, fFlDisc);
-                noiseShape(fKHiss, fLvHiss, fFlHiss);
-                noiseShape(fKHum,  fLvHum,  fFlHum);
                 fInvP = 1.0f / fP;
                 fSpeedShare = fPRef * fInvP;
                 // flutter noise, 3-10 Hz: control rate is plenty
                 fFl1 += fFlutLpC * (rnd() - fFl1);
                 fFl2 += fFlutHpC * (fFl1 - fFl2);
                 fFlutter = (fFl1 - fFl2) * fFlutGain;
-                // read-side gate looks at the envelope arriving 3 ms ahead
-                fEnvAhead = readEnv(kWiper * fP * (1.0f + fM) - 0.003f * sr);
             }
             --fCtlCount;
 
@@ -382,80 +344,57 @@ protected:
 
             fInGain  += fFast * (inTarget - fInGain);
             fWetGain += fFast * (wetTarget - fWetGain);
-            fNb      += fNbFade * (nbTarget - fNb);
-            fToneG   += fFast * (toneG - fToneG);
-            fKDisc   += fNoiseSm * (tDisc - fKDisc);
-            fKHiss   += fNoiseSm * (tHiss - fKHiss);
-            fKHum    += fNoiseSm * (tHum - fKHum);
+            fToneHi  += fFast * (toneHi - fToneHi);
+            fToneLo  += fFast * (toneLo - fToneLo);
 
             // --- sag: tube supply droop + motor slip ----------------------
             const float u = fInGain * x + gRepeat * fWetGain * fY;
             const float au = std::fabs(u);
             fSagEnv += (au > fSagEnv ? fSagAtk : fSagRel) * (au - fSagEnv);
-            const float sagAmt = xSag * clampf(fSagEnv * 2.5f, 0.0f, 1.0f);
+            const float sagAmt = xSag * clampf(fSagEnv * 10.0f, 0.0f, 1.0f);   // full at ~-20 dBFS
 
             // --- motor ----------------------------------------------------
-            const float pGoal = pTarget / (1.0f - 0.03f * sagAmt / S);
+            const float pGoal = pTarget / (1.0f - slipMax * sagAmt);
             fP += motorK * (pGoal - fP);
             const float P = fP;
 
-            // mechanical warble: once per revolution + belt drift + flutter
+            // disc position, and the wear profile under the wipers
             fTheta += fInvP;
             if (fTheta >= 1.0f) fTheta -= 1.0f;
+            const float tp = fTheta * (float)kTabSize;
+            const uint32_t ti = (uint32_t)tp;
+            const float tf = tp - (float)ti;
+            const float wsp = fWearSpd[ti & (kTabSize - 1)] + tf * (fWearSpd[(ti + 1) & (kTabSize - 1)] - fWearSpd[ti & (kTabSize - 1)]);
+            const float wlv = fWearLvl[ti & (kTabSize - 1)] + tf * (fWearLvl[(ti + 1) & (kTabSize - 1)] - fWearLvl[ti & (kTabSize - 1)]);
+
+            // mechanical warble: once per revolution + belt drift + flutter + wear
             fDp1 += fDrift1; if (fDp1 >= 1.0f) fDp1 -= 1.0f;
             fDp2 += fDrift2; if (fDp2 >= 1.0f) fDp2 -= 1.0f;
             const float drift = 0.6f * paraSin(fDp1) + 0.4f * paraSin(fDp2);
-            const float flutter = fFlutter;
             const float mPrev = fM;
             // speed changes are a fixed fraction of motor speed, so their share of
             // the delay shrinks as the delay grows (pitch wobble stays put);
-            // the once-per-rev runout is already locked to the revolution
-            fM = wobDepth * (kWobRev * paraSin(fTheta) + fSpeedShare * (kWobDrift * drift + kWobFlut * flutter));
+            // runout and wear are already locked to the revolution
+            fM = wobDepth * (kWobRev * paraSin(fTheta) + fSpeedShare * (kWobDrift * drift + kWobFlut * fFlutter))
+               + wearP * wsp;
 
             const float pMod = P * (1.0f + fM);
             const float tau  = clampf(kWiper * pMod, 4.0f, fMaxDelay);
             const float pRes = clampf(pMod, 4.0f, fMaxDelay);
 
-            const float lvDisc = fLvDisc, flDisc = fFlDisc;
-            const float lvHiss = fLvHiss, flHiss = fFlHiss;
-            const float lvHum  = fLvHum,  flHum  = fFlHum;
-
             // --- write: tube stage + disc --------------------------------
             const float drive = 1.5f;
             const float bias  = 0.1f;               // tube bias: a touch of even harmonics
-            const float w = (1.0f - 0.5f * sagAmt)
+            const float w = (1.0f - 0.75f * sagAmt)                     // up to -12 dB droop
                           * (softClip(drive * u + bias) - kClipBias) * (1.0f / drive);
 
-            // envelope of what goes onto the disc (signal only)
             const float resIn = readTapLin(fW, pRes);   // residual is low-passed anyway
             fResLp += fResCoef * (resIn - fResLp);
             const float dSig = w + resid * fWetGain * fResLp;
-            const float ad = std::fabs(dSig);
-            fEnvD = ad > fEnvD ? ad : fEnvD + fEnvRel * (ad - fEnvD);
 
-            // predictive gate: noise written now travels with this signal
-            const float oW = gateOpen(fEnvD);
-            fOpenW += (oW > fOpenW ? fGateAtk : fGateRel) * (oW - fOpenW);
-            // ... and read-side noise looks at the envelope arriving 3 ms ahead
-            const float oR = fHolding ? 1.0f : gateOpen(fEnvAhead);
-            fOpenR += (oR > fOpenR ? fGateAtk : fGateRel) * (oR - fOpenR);
-
-            float hissW = 0.0f, hissR = 0.0f;
-            if (lvHiss > 1e-5f) {
-                const float g = fNb * lvHiss * 3.87e-4f;            // -70 dBFS total, split write/read
-                hissW = g * (flHiss + (1.0f - flHiss) * fOpenW) * rnd();
-                hissR = g * (flHiss + (1.0f - flHiss) * fOpenR) * rnd();
-            }
-
-            float dNew;
-            float y0;
-            if (!fHolding) {
-                dNew = 1.6f * softClip((dSig + hissW) * (1.0f / 1.6f)) + 1e-18f;   // charge saturates
+            float y0 = 0.0f;
+            if (!fHolding)
                 y0 = readTap(fW, tau);
-            } else {
-                dNew = 0.0f;
-                y0 = 0.0f;
-            }
 
             // hold loop reader (frozen disc still varispeeds and warbles)
             if (fHolding || fHoldMix > 0.0f) {
@@ -481,44 +420,22 @@ protected:
             }
 
             if (!fHolding) {
-                fBuf[fW] = dNew;
-                fEnvMax = ad > fEnvMax ? ad : fEnvMax;
-                if (++fEnvCount >= kEnvDec) {
-                    fEnv[fEnvW] = fEnvMax;
-                    fEnvW = (fEnvW + 1) & kEnvMask;
-                    fEnvMax = 0.0f; fEnvCount = 0;
-                }
+                fBuf[fW] = 1.6f * softClip(dSig * (1.0f / 1.6f)) + 1e-18f;   // charge saturates
                 fW = (fW + 1) & kBufMask;
             }
 
-            // --- read stage: surface noise, hum, wiper bandwidth, tube ---
-            float r = y0;
-            if (lvDisc > 1e-5f) {
-                const float tp = fTheta * (float)kTabSize;
-                const uint32_t ti = (uint32_t)tp;
-                const float tf = tp - (float)ti;
-                const float a = fTab[ti & (kTabSize - 1)], b = fTab[(ti + 1) & (kTabSize - 1)];
-                r += fNb * lvDisc * 5.0e-4f * (flDisc + (1.0f - flDisc) * fOpenR) * (a + tf * (b - a));
-            }
+            // --- read stage: worn-disc level dips, wiper bandwidth, tube --
+            float r = y0 * (1.0f - wearA * wlv);
             r = fReadLp.process(r);
-            if (lvHum > 1e-5f) {
-                fHumPh += humInc; if (fHumPh >= 1.0f) fHumPh -= 1.0f;
-                const float hp = fHumPh * (float)kHumSize;
-                const uint32_t hi = (uint32_t)hp;
-                const float hf = hp - (float)hi;
-                const float a = fHumTab[hi & (kHumSize - 1)], b = fHumTab[(hi + 1) & (kHumSize - 1)];
-                r += fNb * lvHum * 2.5e-4f * (flHum + (1.0f - flHum) * fOpenR) * (a + hf * (b - a));
-            }
-            r += hissR;
-            float yr = softClip(r);
+            const float yr = softClip(r);
             // DC blocker (the tube stages are biased)
             const float yd = yr - fDcX + (1.0f - fDcCoef) * fDcY;
             fDcX = yr; fDcY = yd;
             fY = yd;
 
-            // --- tone (electronics EQ, out of the loop) -----------------
+            // --- tone (tilt EQ, out of the loop) ------------------------
             fToneState += fToneLp * (yd - fToneState);
-            const float wet = (fToneState + fToneG * (yd - fToneState)) * fWetGain;
+            const float wet = (fToneLo * fToneState + fToneHi * (yd - fToneState)) * fWetGain;
 
             // --- outputs --------------------------------------------------
             const float dry = 1.0f + fInGain * (mixDry - 1.0f);  // bypassed: dry at unity
@@ -528,28 +445,6 @@ protected:
     }
 
 private:
-    // 12 o'clock = stock. Right: up to +12 dB. Left: the predictive gate
-    // deepens to -30 dB first (5 -> 1.5), then the source fades out (1.5 -> 0).
-    static inline void noiseShape(float k, float& level, float& floorGain)
-    {
-        if (k >= 5.0f) {
-            level = std::exp((k - 5.0f) * (12.0f / 5.0f) * 0.115129f);   // dB -> gain
-            floorGain = 1.0f;
-        } else if (k >= 1.5f) {
-            level = 1.0f;
-            floorGain = std::exp(-30.0f * ((5.0f - k) / 3.5f) * 0.115129f);
-        } else {
-            const float f = k / 1.5f;
-            level = f * f;
-            floorGain = 0.0316f;
-        }
-    }
-
-    static inline float gateOpen(float env)
-    {
-        return clampf(env * (1.0f / 0.004f), 0.0f, 1.0f);   // fully open above -48 dBFS
-    }
-
     inline float rnd()
     {
         fRng ^= fRng << 13; fRng ^= fRng >> 17; fRng ^= fRng << 5;
@@ -586,17 +481,6 @@ private:
                        fBuf[(b + 1) & kBufMask], fBuf[(b + 2) & kBufMask], t);
     }
 
-    inline float readEnv(float d) const
-    {
-        if (d < 0.0f) d = 0.0f;
-        const float de = d / (float)kEnvDec;
-        const uint32_t ip = (uint32_t)de;
-        const float t = de - (float)ip;
-        const uint32_t b = fEnvW - 1 - ip;
-        const float a = fEnv[b & kEnvMask], c = fEnv[(b - 1) & kEnvMask];
-        return a + t * (c - a);
-    }
-
     void startHold()
     {
         // freeze the disc: the loop is the last revolution behind the write
@@ -607,70 +491,69 @@ private:
         fHoldMix = 1.0f;
     }
 
+    // Wear profile of one revolution: a few smooth low-order bumps (eccentric,
+    // warped, unevenly coated disc) plus sharper local defects. Speed: zero
+    // mean, unit RMS. Level: 0 = full charge, 1 = deepest dip.
     void buildTables()
     {
-        // disc surface: a light grain plus sparse crackle, one revolution
         uint32_t s = 0x9E3779B9u;
         auto r = [&s]() {
             s ^= s << 13; s ^= s >> 17; s ^= s << 5;
             return (float)(int32_t)s * (1.0f / 2147483648.0f);
         };
-        float lp = 0.0f, tail = 0.0f, sum = 0.0f;
+        float amp[7], ph[7];
+        for (int h = 0; h < 7; ++h) { amp[h] = r() / (float)(h + 2); ph[h] = r() * kPi; }
+        float sum = 0.0f;
         for (uint32_t i = 0; i < kTabSize; ++i) {
-            lp += 0.3f * (r() - lp);
-            if (std::fabs(r()) > 0.985f) tail = 6.0f * r();
-            tail *= 0.6f;
-            fTab[i] = 0.4f * lp + tail;
-            sum += fTab[i] * fTab[i];
+            const float a = 2.0f * kPi * (float)i / (float)kTabSize;
+            float v = 0.0f;
+            for (int h = 0; h < 7; ++h) v += amp[h] * std::sin((float)(h + 2) * a + ph[h]);
+            fWearSpd[i] = v;
+            sum += v * v;
         }
-        float mean = 0.0f;
-        for (uint32_t i = 0; i < kTabSize; ++i) mean += fTab[i];
-        mean /= (float)kTabSize;
-        sum = 0.0f;
-        for (uint32_t i = 0; i < kTabSize; ++i) { fTab[i] -= mean; sum += fTab[i] * fTab[i]; }
         const float g = 1.0f / std::sqrt(sum / (float)kTabSize + 1e-12f);
-        for (uint32_t i = 0; i < kTabSize; ++i) fTab[i] *= g;
+        for (uint32_t i = 0; i < kTabSize; ++i) fWearSpd[i] *= g;
 
-        // hum: fundamental + 3 harmonics, RMS 1
-        sum = 0.0f;
-        for (uint32_t i = 0; i < kHumSize; ++i) {
-            const float ph = 2.0f * kPi * (float)i / (float)kHumSize;
-            fHumTab[i] = std::sin(ph) + 0.5f * std::sin(2.0f * ph) + 0.3f * std::sin(3.0f * ph) + 0.15f * std::sin(4.0f * ph);
-            sum += fHumTab[i] * fHumTab[i];
+        for (uint32_t i = 0; i < kTabSize; ++i) fWearLvl[i] = 0.0f;
+        for (int d = 0; d < 9; ++d) {                       // worn patches
+            const float c = 0.5f * (r() + 1.0f) * (float)kTabSize;
+            const float wdt = 6.0f + 30.0f * 0.5f * (r() + 1.0f);
+            const float depth = 0.3f + 0.7f * 0.5f * (r() + 1.0f);
+            for (uint32_t i = 0; i < kTabSize; ++i) {
+                float dx = std::fabs((float)i - c);
+                if (dx > (float)kTabSize * 0.5f) dx = (float)kTabSize - dx;
+                const float e = dx / wdt;
+                const float v = depth * std::exp(-e * e);
+                if (v > fWearLvl[i]) fWearLvl[i] = v;
+            }
         }
-        const float h = 1.0f / std::sqrt(sum / (float)kHumSize);
-        for (uint32_t i = 0; i < kHumSize; ++i) fHumTab[i] *= h;
     }
 
     float fParams[kParameterCount];
 
     float    fBuf[kBufSize];
-    float    fEnv[kEnvSize];
-    float    fTab[kTabSize];
-    float    fHumTab[kHumSize];
-    uint32_t fW = 0, fEnvW = 0, fEnvCount = 0, fCtlCount = 0, fClearPos = kBufSize;
-    float    fEnvMax = 0.0f;
+    float    fWearSpd[kTabSize];
+    float    fWearLvl[kTabSize];
+    uint32_t fW = 0, fCtlCount = 0, fClearPos = kBufSize;
 
     Biquad fReadLp;
     float fResLp = 0.0f, fResCoef = 0.1f;
-    float fDcX = 0.0f, fDcY = 0.0f, fDcCoef = 0.0f, fToneState = 0.0f, fToneLp = 0.0f, fToneG = 1.0f;
-    float fY = 0.0f, fEnvD = 0.0f, fSagEnv = 0.0f, fOpenW = 1.0f, fOpenR = 1.0f;
+    float fDcX = 0.0f, fDcY = 0.0f, fDcCoef = 0.0f, fToneState = 0.0f, fToneLp = 0.0f;
+    float fToneHi = 1.0f, fToneLo = 1.0f;
+    float fY = 0.0f, fSagEnv = 0.0f;
     float fP = 16800.0f, fTheta = 0.0f, fM = 0.0f;
     float fDp1 = 0.0f, fDp2 = 0.3f, fFl1 = 0.0f, fFl2 = 0.0f, fFlutGain = 1.0f;
-    float fHumPh = 0.0f;
 
     bool  fHolding = false;
     uint32_t fHoldW = 0;
     float fHoldP = 0.0f, fHoldPh = 0.0f, fHoldMix = 0.0f, fHoldFade = 0.0f, fXfadeLen = 96.0f;
 
     float fSr = 48000.0f, fMaxDelay = 1000.0f, fPRef = 18666.0f;
-    float fFast = 0.0f, fNoiseSm = 0.0f, fNbFade = 0.0f, fSagAtk = 0.0f, fSagRel = 0.0f;
-    float fEnvRel = 0.0f, fGateAtk = 0.0f, fGateRel = 0.0f, fFlutLpC = 0.0f, fFlutHpC = 0.0f;
-    float fInvP = 1.0f / 16800.0f, fSpeedShare = 1.0f, fFlutter = 0.0f, fEnvAhead = 0.0f;
+    float fFast = 0.0f, fSagAtk = 0.0f, fSagRel = 0.0f;
+    float fFlutLpC = 0.0f, fFlutHpC = 0.0f;
+    float fInvP = 1.0f / 16800.0f, fSpeedShare = 1.0f, fFlutter = 0.0f;
     float fDrift1 = 0.0f, fDrift2 = 0.0f;
-    float fInGain = 1.0f, fWetGain = 1.0f, fNb = 1.0f;
-    float fKDisc = 5.0f, fKHiss = 5.0f, fKHum = 5.0f;
-    float fLvDisc = 1.0f, fFlDisc = 1.0f, fLvHiss = 1.0f, fFlHiss = 1.0f, fLvHum = 1.0f, fFlHum = 1.0f;
+    float fInGain = 1.0f, fWetGain = 1.0f;
     uint32_t fRng = 0x12345678u;
     bool  fFirstRun = true, fCleared = false;
 

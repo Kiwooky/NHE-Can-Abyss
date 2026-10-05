@@ -15,9 +15,9 @@
         foaf:name "New Horizon Electronics" ;
         foaf:homepage <https://github.com/Kiwooky/NHE-Can-Abyss>
     ] ;
-    rdfs:comment "Electrostatic oil can delay modelled on 1960s Tel-Ray / Morley units. Leftover charge circles the disc every revolution (Reverb), the motor sets the time so sweeps bend pitch, and the warble follows disc speed. Modern mods: Disc Size, Sag, Hold, and Noise Mods with a predictive gate." ;
+    rdfs:comment "Electrostatic oil can delay modelled on 1960s Tel-Ray / Morley units. Leftover charge circles the disc every revolution (Reverb), the motor sets the time so sweeps bend pitch, and the warble follows disc speed. Modern mods: Disc Size, Wear, Sag and Hold." ;
     lv2:minorVersion 2 ;
-    lv2:microVersion 0 ;
+    lv2:microVersion 2 ;
     lv2:optionalFeature lv2:hardRTCapable ;
     lv2:requiredFeature <http://lv2plug.in/ns/ext/options#options> ,
                         <http://lv2plug.in/ns/ext/urid#map> ;
@@ -90,6 +90,14 @@
     ] , [
         a lv2:InputPort , lv2:ControlPort ;
         lv2:index 9 ;
+        lv2:symbol "wear" ;
+        lv2:name "Wear" ;
+        lv2:default 3 ;
+        lv2:minimum 0 ;
+        lv2:maximum 10
+    ] , [
+        a lv2:InputPort , lv2:ControlPort ;
+        lv2:index 10 ;
         lv2:symbol "mix" ;
         lv2:name "Mix" ;
         lv2:default 50 ;
@@ -98,7 +106,7 @@
         units:unit units:pc
     ] , [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 10 ;
+        lv2:index 11 ;
         lv2:symbol "sag" ;
         lv2:name "Sag" ;
         lv2:default 0 ;
@@ -106,18 +114,9 @@
         lv2:maximum 10
     ] , [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 11 ;
+        lv2:index 12 ;
         lv2:symbol "hold" ;
         lv2:name "Hold" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        lv2:portProperty lv2:integer , lv2:toggled , mod:preferMomentaryOnByDefault
-    ] , [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 12 ;
-        lv2:symbol "noise_mods" ;
-        lv2:name "Noise Mods" ;
         lv2:default 0 ;
         lv2:minimum 0 ;
         lv2:maximum 1 ;
@@ -125,42 +124,6 @@
     ] , [
         a lv2:InputPort , lv2:ControlPort ;
         lv2:index 13 ;
-        lv2:symbol "disc_noise" ;
-        lv2:name "Disc" ;
-        lv2:default 5 ;
-        lv2:minimum 0 ;
-        lv2:maximum 10
-    ] , [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 14 ;
-        lv2:symbol "hiss" ;
-        lv2:name "Hiss" ;
-        lv2:default 5 ;
-        lv2:minimum 0 ;
-        lv2:maximum 10
-    ] , [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 15 ;
-        lv2:symbol "hum" ;
-        lv2:name "Hum" ;
-        lv2:default 5 ;
-        lv2:minimum 0 ;
-        lv2:maximum 10
-    ] , [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 16 ;
-        lv2:symbol "hum_hz" ;
-        lv2:name "Hum Hz" ;
-        lv2:default 60 ;
-        lv2:minimum 50 ;
-        lv2:maximum 60 ;
-        lv2:portProperty lv2:integer , lv2:enumeration ;
-        units:unit units:hz ;
-        lv2:scalePoint [ rdfs:label "50 Hz" ; rdf:value 50 ] ,
-                       [ rdfs:label "60 Hz" ; rdf:value 60 ]
-    ] , [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 17 ;
         lv2:symbol "tails" ;
         lv2:name "Tails" ;
         lv2:default 1 ;
@@ -169,7 +132,7 @@
         lv2:portProperty lv2:integer , lv2:toggled
     ] , [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 18 ;
+        lv2:index 14 ;
         lv2:symbol "lv2_enabled" ;
         lv2:name "Enabled" ;
         lv2:default 1 ;

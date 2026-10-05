@@ -26,28 +26,9 @@
 .canabyss{{{cns}}} .ca-tone      { left: 285px; top: 66px; }
 .canabyss{{{cns}}} .ca-wobble    { left: 30px;  top: 162px; }
 .canabyss{{{cns}}} .ca-disc_size { left: 115px; top: 162px; }
-.canabyss{{{cns}}} .ca-mix       { left: 200px; top: 162px; }
+.canabyss{{{cns}}} .ca-mix       { left: 370px; top: 66px; }
+.canabyss{{{cns}}} .ca-wear      { left: 200px; top: 162px; }
 .canabyss{{{cns}}} .ca-sag       { left: 285px; top: 162px; }
-
-/* noise trims: the same strip drawn at 40 px (frames = strip width / element width) */
-.canabyss{{{cns}}} .ca-trim {
-    position: absolute;
-    top: 166px;
-    width: 40px;
-    height: 40px;
-    background-image: url(/resources/knob.png{{{ns}}});
-    background-size: auto 40px;
-    background-repeat: no-repeat;
-    background-position: 0 0;
-    cursor: pointer;
-    z-index: 21;
-    transition: opacity 0.2s;
-}
-.canabyss{{{cns}}} .ca-disc_noise { left: 412px; }
-.canabyss{{{cns}}} .ca-hiss       { left: 492px; }
-.canabyss{{{cns}}} .ca-hum        { left: 572px; }
-/* locked: the trims are ignored by the DSP, so show them dimmed */
-.canabyss{{{cns}}} .ca-dim { opacity: 0.35; }
 
 /* toggles: 100x62 frames [LED off | LED on]; switch widget, class "on" = value max */
 .canabyss{{{cns}}} .ca-toggle {
@@ -60,18 +41,9 @@
     cursor: pointer;
     z-index: 21;
 }
-.canabyss{{{cns}}} .ca-noise_mods { left: 400px; top: 64px; }
-.canabyss{{{cns}}} .ca-tails      { left: 462px; top: 270px; }
+.canabyss{{{cns}}} .ca-tails      { left: 503px; top: 154px; }
 .canabyss{{{cns}}} .ca-toggle.off { background-position: 0 0; }
 .canabyss{{{cns}}} .ca-toggle.on  { background-position: -100px 0; }
-.canabyss{{{cns}}} .ca-small {
-    left: 535px;
-    top: 74px;
-    width: 80px;
-    height: 50px;
-    background-size: 160px 50px;
-}
-.canabyss{{{cns}}} .ca-small.on { background-position: -80px 0; }
 
 /* footswitches: 168x139 frames [LED off | LED on] */
 .canabyss{{{cns}}} .ca-fs {

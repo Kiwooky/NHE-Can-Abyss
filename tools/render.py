@@ -23,15 +23,13 @@ css = css.replace('{{{cns}}}', '').replace('{{{ns}}}', '').replace('/resources/'
 def knob(v, lo, hi, px=62):
     return '-%dpx 0' % (round((v - lo) / (hi - lo) * 64) * px)
 
-state = {'repeat': 3, 'reverb': 5, 'tone': 5, 'wobble': 5, 'disc_size': 5, 'sag': 0}
+state = {'repeat': 3, 'reverb': 5, 'tone': 5, 'wobble': 5, 'disc_size': 5, 'wear': 3, 'sag': 0}
 extra = ''.join('.canabyss .ca-%s{background-position:%s}' % (k, knob(v, 0, 10)) for k, v in state.items())
 import math
 tpos = math.log(350 / 40) / math.log(2000 / 40)          # Time knob is logarithmic
 extra += '.canabyss .ca-time{background-position:-%dpx 0}' % (round(tpos * 64) * 62)
 extra += '.canabyss .ca-mix{background-position:%s}' % knob(50, 0, 100)
-extra += ''.join('.canabyss .ca-%s{background-position:%s}' % (k, knob(5, 0, 10, 40)) for k in ('disc_noise', 'hiss', 'hum'))
-extra += '.canabyss .ca-trim,.canabyss .ca-hum_hz{opacity:0.35}'
-extra += '.canabyss .ca-tails{background-position:-100px 0}.canabyss .ca-hum_hz{background-position:-80px 0}'
+extra += '.canabyss .ca-tails{background-position:-100px 0}'
 extra += '.canabyss .ca-effect{background-position:-168px 0}'
 page = '<html><head><style>body{margin:0;background:transparent}%s%s</style></head><body>%s</body></html>' % (css, extra, html)
 tmp = os.path.join(ROOT, 'build', 'face.html')

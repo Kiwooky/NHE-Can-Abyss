@@ -14,12 +14,12 @@ SO = os.environ.get('CA_SO', os.path.join(ROOT, 'bin', 'nhe-can-abyss.lv2', 'nhe
 HOST = os.environ.get('CA_HOST', os.path.join(ROOT, 'tools', 'lv2host')).split()
 
 # control ports in index order (3..18)
-ORDER = ['time', 'repeat', 'reverb', 'tone', 'wobble', 'disc_size', 'mix', 'sag', 'hold',
-         'noise_mods', 'disc_noise', 'hiss', 'hum', 'hum_hz', 'tails', 'enabled']
-DEF = dict(time=350, repeat=3, reverb=5, tone=5, wobble=5, disc_size=5, mix=50, sag=0, hold=0,
-           noise_mods=0, disc_noise=5, hiss=5, hum=5, hum_hz=60, tails=1, enabled=1)
+ORDER = ['time', 'repeat', 'reverb', 'tone', 'wobble', 'disc_size', 'wear', 'mix', 'sag', 'hold',
+         'tails', 'enabled']
+DEF = dict(time=350, repeat=3, reverb=5, tone=5, wobble=5, disc_size=5, wear=3, mix=50, sag=0, hold=0,
+           tails=1, enabled=1)
 PORT = {k: 3 + i for i, k in enumerate(ORDER)}
-QUIET = dict(noise_mods=1, disc_noise=0, hiss=0, hum=0)    # all noise sources off
+QUIET = dict(wear=0)    # a new disc: no wear irregularities
 
 fails = 0
 
@@ -124,7 +124,7 @@ check('time sweep finite and bounded', np.isfinite(m).all() and np.abs(w).max() 
 for srt in (44100, 48000, 96000):
     x = 0.5 * np.random.default_rng(4).standard_normal(int(6 * srt))
     m, w = run(x, srt, repeat=10, reverb=10, sag=10, wobble=10, disc_size=0, time=40, tone=10,
-               noise_mods=1, disc_noise=10, hiss=10, hum=10)
+               wear=10)
     check('torture %d Hz finite and bounded' % srt, np.isfinite(m).all() and np.abs(w).max() < 4,
           'peak %.2f' % np.abs(w).max())
 
@@ -148,34 +148,41 @@ _, w = run(x, sr, events=[(int(0.9 * sr), 'hold', 1), (int(2.0 * sr), 'hold', 0)
 d = np.abs(np.diff(w[int(1.95 * sr):int(2.1 * sr)]))
 check('hold release is click-free', d.max() < 0.1, 'max step %.3f' % d.max())
 
-# 8. Noise Mods locked: knob positions make no difference
-x = np.zeros(int(1.5 * sr)); x[int(0.1 * sr)] = 0.5
-a, _ = run(x, sr, noise_mods=0, disc_noise=5, hiss=5, hum=5)
-b, _ = run(x, sr, noise_mods=0, disc_noise=10, hiss=0, hum=2)
-check('locked = stock whatever the knobs', np.array_equal(a, b))
+# 8. Clean: silence in, silence out, even with a worn disc and Sag
+_, w = run(np.zeros(int(2 * sr)), sr, wear=10, sag=10, wobble=10, disc_size=0)
+check('clean: no hiss, hum or crackle', np.abs(w).max() < 1e-6, '%.1f dBFS peak' % db(np.abs(w).max()))
 
-# 9. Stock noise floor, and all sources at 0 = silent
-z = np.zeros(int(2 * sr))
-_, w = run(z, sr)
-nf = db(rms(w[sr:]))
-check('stock noise floor in range (-80..-60 dBFS)', -80 < nf < -60, '%.1f dBFS' % nf)
-_, w = run(z, sr, **QUIET)
-check('noise knobs at 0: silent', rms(w[sr:]) < 1e-6, '%.1f dBFS' % db(rms(w[sr:])))
-_, w = run(z, sr, noise_mods=1, disc_noise=10, hiss=10, hum=10)
-check('noise knobs at 10: louder than stock', db(rms(w[sr:])) > nf + 6, '%.1f dBFS' % db(rms(w[sr:])))
+# 9. Tone: a wide tilt, duller and brighter than stock
+x = np.zeros(int(1.0 * sr)); x[4800:4800 + 1440] = 0.3 * np.random.default_rng(5).standard_normal(1440)
+tc = {}
+for tv in (0, 5, 10):
+    _, w = run(x, sr, tone=tv, repeat=0, reverb=0, wobble=0, **QUIET)
+    a0 = int(0.45 * sr)
+    tc[tv] = centroid(w[a0 - 200:a0 + 1900], sr)
+check('Tone 0 much duller', tc[0] < 0.7 * tc[5], '%.0f vs %.0f Hz' % (tc[0], tc[5]))
+check('Tone 10 brighter', tc[10] > 1.1 * tc[5], '%.0f vs %.0f Hz' % (tc[10], tc[5]))
 
-# 10. Predictive gate: quieter in the gaps, open on the echoes
-t = np.arange(int(4 * sr)) / sr
-burst = ((t % 1.0) < 0.15).astype(float) * 0.3 * np.sin(2 * np.pi * 300 * t)
-def gap_and_echo(hiss):
-    _, w = run(burst, sr, repeat=0, reverb=0, wobble=0, noise_mods=1, disc_noise=0, hum=0, hiss=hiss)
-    gap = rms(w[int(2.70 * sr):int(2.95 * sr)])      # no echo here
-    echo = rms(w[int(2.37 * sr):int(2.48 * sr)])     # echo of the burst at 2.0 s
-    return gap, echo
-g5, e5 = gap_and_echo(5)
-g2, e2 = gap_and_echo(1.5)
-check('gate: gaps at least 20 dB quieter', db(g2) < db(g5) - 20, '%.1f -> %.1f dBFS' % (db(g5), db(g2)))
-check('gate: echoes untouched', abs(db(e2) - db(e5)) < 0.5, '%.2f dB' % (db(e2) - db(e5)))
+# 10. Sag: a hard hit dips the pitch (motor slip) and droops the sustain
+from scipy.signal import hilbert as _hb, butter, sosfiltfilt
+from scipy.ndimage import uniform_filter1d as _uf
+t = np.arange(int(2.5 * sr)) / sr
+x = 0.05 * np.sin(2 * np.pi * 440 * t) + np.where((t > 1.0) & (t < 1.25), 0.15 * np.sin(2 * np.pi * 110 * t), 0)
+def dip(sag):
+    _, w = run(x, sr, sag=sag, repeat=0, reverb=0, wobble=0, **QUIET)
+    seg = sosfiltfilt(butter(4, [350, 550], 'bandpass', fs=sr, output='sos'), w[int(0.9 * sr):int(1.33 * sr)])
+    f = np.diff(np.unwrap(np.angle(_hb(seg)))) * sr / 2 / np.pi
+    return float((1200 * np.log2(np.abs(_uf(f, 480)[1500:-1500]) / 440)).min())
+d0, d10 = dip(0), dip(10)
+check('Sag 10: hard hits dip the pitch (> 50 cents)', d10 < -50 and d0 > -5, '%.0f cents (Sag 0: %.0f)' % (d10, d0))
+g = np.zeros_like(t)
+for k in range(2):
+    n = int((0.5 + k) * sr); L = int(0.4 * sr)
+    g[n:n + L] = 0.1 * np.exp(-np.arange(L) / (0.1 * sr)) * np.sin(2 * np.pi * 196 * np.arange(L) / sr)
+sus = []
+for sg in (0, 10):
+    _, w = run(g, sr, sag=sg, repeat=0, reverb=0, wobble=0, **QUIET)
+    sus.append(db(rms(w[int(0.92 * sr):int(1.05 * sr)])))
+check('Sag 10: sustain droops at guitar level (> 3 dB)', sus[0] - sus[1] > 3, '%.1f dB' % (sus[0] - sus[1]))
 
 # 11. Bypass: dry at unity, click-free, tails on and off
 t = np.arange(int(3 * sr)) / sr
@@ -192,7 +199,7 @@ for tails in (1, 0):
     check('bypass tails=%d: dry at unity, no click' % tails, ok and d.max() < 0.1,
           'max step %.3f' % d.max())
 
-# 12. Silence in, silence out with noise off
+# 12. Silence in, silence out
 _, w = run(np.zeros(int(1 * sr)), sr, **QUIET)
 check('silence', np.abs(w).max() < 1e-6)
 
@@ -207,21 +214,22 @@ def warble(**kw):
     c = 1200 * np.log2(uniform_filter1d(f, 480)[2000:-2000] / 440)
     return float(c.std())
 w350, w1500, w10, wbig = warble(), warble(time=1500), warble(wobble=10), warble(disc_size=10)
+wsmall, wworn, wlight = warble(disc_size=0), warble(wear=10), warble(wear=3)
 check('warble stock 3-6 cents RMS', 3 < w350 < 6, '%.1f cents' % w350)
 check('warble independent of time', abs(w1500 - w350) < 1.0, '%.1f vs %.1f cents' % (w1500, w350))
-check('Wobble 10 about doubles it', 1.6 < w10 / w350 < 2.4, '%.1f cents' % w10)
+check('Wobble 10 about 3-4.5x stock', 3.0 < w10 / w350 < 4.5, '%.1f cents' % w10)
 check('big disc steadier', wbig < 0.75 * w350, '%.1f cents' % wbig)
+check('quarter-size disc about 3-4.5x stock', 3.0 < wsmall / w350 < 4.5, '%.1f cents' % wsmall)
+check('Wear 3 (stock) is a light touch', 1.05 < wlight / w350 < 1.6, '%.1f cents' % wlight)
+check('Wear 10 is beaten up (> 5x)', wworn > 5 * w350, '%.1f cents' % wworn)
 
-# 14. Hold engage and Noise Mods unlock are click-free
+# 14. Hold engage is click-free
 t = np.arange(int(3 * sr)) / sr
 x = 0.3 * np.sin(2 * np.pi * 440 * t)
 _, w = run(x, sr, events=[(int(1.0 * sr), 'hold', 1)], repeat=0, reverb=6)
 ref = np.abs(np.diff(w[int(0.5 * sr):int(0.9 * sr)])).max()
 step = np.abs(np.diff(w[int(0.98 * sr):int(3 * sr)])).max()
 check('hold engage and loop seam click-free', step < 1.5 * ref, 'step %.3f vs signal %.3f' % (step, ref))
-_, w = run(np.zeros(int(2 * sr)), sr, noise_mods=0, disc_noise=10, hiss=10, hum=10,
-           events=[(int(1 * sr), 'noise_mods', 1)])
-check('unlock glides (no step)', np.abs(np.diff(w)).max() < 0.01, 'max step %.4f' % np.abs(np.diff(w)).max())
 
 print('\n%d failure(s)' % fails)
 sys.exit(1 if fails else 0)

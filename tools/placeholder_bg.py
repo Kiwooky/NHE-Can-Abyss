@@ -29,25 +29,26 @@ d.text((640, 20), 'placeholder face', font=tiny, fill=quiet, anchor='ra')
 def label(cx, ty, text, f=small):
     d.text((cx, ty), text, font=f, fill=cream, anchor='ma')
 
-# main knobs: two rows of four (62 px), centres
-cols = [61, 146, 231, 316]
-for cx, t in zip(cols, ['TIME', 'REPEAT', 'REVERB', 'TONE']):
+# main knobs (62 px): row 1 Time Repeat Reverb Tone Mix, row 2 Wobble Disc Size Wear Sag
+cols = [61, 146, 231, 316, 401]
+for cx, t in zip(cols, ['TIME', 'REPEAT', 'REVERB', 'TONE', 'MIX']):
     label(cx, 134, t)
-for cx, t in zip(cols, ['WOBBLE', 'DISC SIZE', 'MIX', 'SAG']):
+for cx, t in zip(cols, ['WOBBLE', 'DISC SIZE', 'WEAR', 'SAG']):
     label(cx, 230, t)
 label(61, 147, '40 ms · 747 · 2 s', tiny)
+label(316, 147, 'dull · bright', tiny)
 
-# noise panel
-d.rounded_rectangle((388, 58, 636, 236), radius=8, outline=quiet, width=1)
-label(450, 132, 'NOISE MODS')
-label(575, 132, 'HUM HZ  50 | 60', tiny)
-for cx, t in zip([432, 512, 592], ['DISC', 'HISS', 'HUM']):
-    label(cx, 214, t)
+# the mods corner
+d.rounded_rectangle((470, 58, 636, 246), radius=8, outline=quiet, width=1)
+d.text((482, 64), 'NEW HORIZON MODS', font=tiny, fill=quiet)
+d.text((482, 80), 'Disc Size · Wear · Sag', font=tiny, fill=quiet)
+d.text((482, 94), 'Hold freezes the disc;', font=tiny, fill=quiet)
+d.text((482, 106), 'Time still varispeeds it.', font=tiny, fill=quiet)
+label(553, 222, 'TAILS')
 
 # footswitch row
 d.text((64, 271), 'HOLD', font=small, fill=cream)
 d.text((264, 271), 'EFFECT', font=small, fill=cream)
-label(512, 338, 'TAILS')
 
 im.save(os.path.join(ROOT, 'bundle', 'nhe-can-abyss.lv2', 'modgui', 'background.jpg'), quality=88)
 print('background written')

@@ -14,7 +14,8 @@ There's no tape and no erase head. A spinning disc in a can of oil holds the sig
 
 - **Echoes smear into a half-reverb wash.** Leftover charge comes round every revolution, fainter and darker each pass.
 - **The motor sets the time.** Turn Time and the pitch bends, like tape. Freeze the disc with Hold and it still varispeeds.
-- **The warble is mechanical.** Disc runout, belt drift and motor flutter, locked to disc speed.
+- **The warble is mechanical.** Disc runout, belt drift, motor flutter and disc wear, locked to disc speed.
+- **Clean by design.** The old units hissed and hummed; this one keeps the movement and drops the noise.
 - **Long delays get darker by themselves**, because the disc surface moves slower past the wiper.
 
 ## Controls
@@ -24,15 +25,13 @@ There's no tape and no erase head. A spinning disc in a can of oil holds the sig
 | Time | Motor speed: 40 ms to 2 s (747 ms marks the Morley's ceiling). Sweeps bend pitch |
 | Repeat | Feedback from the read wiper back to the write wiper; can run away |
 | Reverb | Charge the disc keeps each revolution: the oil-can smear |
-| Tone | Electronics EQ on the echoes, darker to brighter |
-| Wobble | Motor, belt and runout warble; 5 = stock |
-| Disc Size | 5 = stock. Bigger = brighter, quieter, steadier, heavier. Smaller = dark, noisy, warbly, twitchy |
+| Tone | Tilt EQ on the echoes: properly dull at 0, bright at 10 |
+| Wobble | Motor, belt and runout warble; 5 = stock, 10 = about 4x |
+| Disc Size | 5 = stock. Bigger (to 2x) = brighter, steadier, heavier. Smaller (to a quarter) = darker, warblier, twitchier |
+| Wear | A worn disc: speed and level wobbles tied to disc position, so they repeat every revolution and build in the tails. 0 = new, 3 = stock, 10 = beaten up |
 | Mix | Dry/wet on Mix Out |
-| Sag | Tube supply droop on hard hits, plus a disc slip that dips the pitch |
-| Hold | Freezes the disc (momentary by default); Time still varispeeds the loop |
-| Noise Mods | Unlocks Disc, Hiss and Hum. Locked = stock noise |
-| Disc / Hiss / Hum | 12 o'clock = stock. Right = more. Left = a predictive gate cleans the gaps first, then the source fades out |
-| Hum Hz | 50 or 60 Hz mains |
+| Sag | Tube supply droop on hard hits, plus a motor slip that dips the pitch (up to about a semitone) |
+| Hold | Freezes the disc (latching); Time still varispeeds the loop |
 | Tails | Bypass lets the repeats ring out |
 | Effect | Bypass, click-free; dry at unity |
 

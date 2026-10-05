@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.0.2 — 2026-10-05
+
+- Hold is latching by default (was momentary): press to freeze, press again to release.
+
+## 1.0.1 — 2026-10-05
+
+After the first hardware test. Ports changed (not yet public, so allowed): re-add the plugin to test pedalboards.
+
+- **Clean by design:** Noise Mods, Hiss, Hum, Hum Hz and the predictive gate are gone. The noise wasn't adding character.
+- **Wear** (new, replaces Disc noise): a worn disc's speed and level irregularities, locked to disc position so they repeat every revolution and build in the tails. 0 = new, 3 = stock (light), 10 = beaten up (about 9x stock warble).
+- **Disc Size** now goes down to a quarter size: about 3.7x stock warble at 0, darker and twitchier.
+- **Wobble** curves steeply above 5: about 3.7x stock at 10 (was 2x). With the smallest disc, about 15x.
+- **Sag** reacts to normal guitar levels and droops up to 12 dB; hard hits dip the pitch up to about a semitone.
+- **Tone** is a wider tilt EQ around 1.2 kHz: highs -24 dB at 0, +9 dB at 10.
+- Face: noise panel removed, Wear knob added. Still a placeholder.
+- CPU: about 0.7x Taj Mahal (Duo build under emulation), down from 1.25x.
+
 ## 1.0.0 — 2026-10-05
 
 First build.
