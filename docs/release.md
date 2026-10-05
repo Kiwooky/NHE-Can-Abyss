@@ -16,7 +16,7 @@ As of October 2026, MOD publishes community plugins in three steps.
 | Pedal face | **Placeholder** (borrowed MultiPlay art); real artwork to come |
 | Manual PDF + `modgui:documentation` line | To do |
 | Factory presets | To do |
-| Tested on Duo | 1.0.0 played; 1.0.1 to check (incl. CPU meter) |
+| Tested on Duo | 1.0.0 played; 1.0.3 to check (incl. CPU meter) |
 | Tested on Duo X and Dwarf | To do (forum volunteers) |
 | Assignments: footswitches, knobs, MIDI | To check on hardware |
 | Demo audio/video | To do |

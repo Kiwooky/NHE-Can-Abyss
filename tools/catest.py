@@ -14,10 +14,10 @@ SO = os.environ.get('CA_SO', os.path.join(ROOT, 'bin', 'nhe-can-abyss.lv2', 'nhe
 HOST = os.environ.get('CA_HOST', os.path.join(ROOT, 'tools', 'lv2host')).split()
 
 # control ports in index order (3..18)
-ORDER = ['time', 'repeat', 'reverb', 'tone', 'wobble', 'disc_size', 'wear', 'mix', 'sag', 'hold',
-         'tails', 'enabled']
-DEF = dict(time=350, repeat=3, reverb=5, tone=5, wobble=5, disc_size=5, wear=3, mix=50, sag=0, hold=0,
-           tails=1, enabled=1)
+ORDER = ['time', 'repeat', 'reverb', 'tone', 'wobble', 'disc_size', 'wear', 'mix', 'sag', 'ceiling',
+         'hold', 'safety', 'tails', 'enabled']
+DEF = dict(time=350, repeat=3, reverb=5, tone=5, wobble=5, disc_size=5, wear=3, mix=50, sag=0, ceiling=-6,
+           hold=0, safety=1, tails=1, enabled=1)
 PORT = {k: 3 + i for i, k in enumerate(ORDER)}
 QUIET = dict(wear=0)    # a new disc: no wear irregularities
 
@@ -68,18 +68,31 @@ def peaks(w, sr, t0, period, n):
     return out
 
 
-# 1. Impulse: first echo at Time, residual repeats every revolution (Time / 0.9)
+# 1. Impulse: first echo at Time; Reverb returns every revolution (Time / 0.9) as a widening smear
 for sr in (44100, 48000, 96000):
     x = np.zeros(int(3.0 * sr)); x[int(0.1 * sr)] = 0.5
     _, w = run(x, sr, repeat=0, wobble=0, **QUIET)
     pk = peaks(w, sr, 0.1 + 0.35, 0.35 / 0.9, 4)
     t_first = pk[0][1] - 0.1
-    gaps = [pk[k + 1][1] - pk[k][1] for k in range(3)]
     finite = np.isfinite(w).all()
     check('impulse %d Hz: first echo at 350 ms' % sr, abs(t_first - 0.35) < 0.002 and finite,
           '%.1f ms' % (t_first * 1e3))
-    check('impulse %d Hz: residual every revolution (388.9 ms)' % sr,
-          all(abs(g - 0.35 / 0.9) < 0.003 for g in gaps), ' '.join('%.1f' % (g * 1e3) for g in gaps))
+    # Reverb is a smear: each pass's energy is centred on one more revolution,
+    # and each pass is wider than the last (diffusion), not a clean echo
+    P = 0.35 / 0.9
+    cen, wid = [], []
+    for k in range(3):
+        c = 0.1 + 0.35 + k * P
+        a0, b0 = int((c - 0.06) * sr), int((c + 0.06) * sr)
+        e = w[a0:b0].astype(np.float64) ** 2
+        tt = np.arange(a0, b0) / sr
+        m0 = float((e * tt).sum() / e.sum())
+        cen.append(m0 - (0.1 + 0.35))
+        wid.append(float(np.sqrt((e * (tt - m0) ** 2).sum() / e.sum())))
+    check('impulse %d Hz: residual centred on each revolution (388.9 ms)' % sr,
+          all(abs(cen[k] - k * P) < 0.006 for k in range(3)), ' '.join('%.1f' % (c * 1e3) for c in cen))
+    check('impulse %d Hz: each pass smeared wider' % sr, wid[2] > wid[1] > wid[0],
+          ' '.join('%.1f ms' % (v * 1e3) for v in wid))
     check('impulse %d Hz: each pass quieter' % sr, all(pk[k + 1][0] < pk[k][0] for k in range(3)),
           ' '.join('%.1f dB' % db(p[0] / 0.5) for p in pk))
 
@@ -230,6 +243,51 @@ _, w = run(x, sr, events=[(int(1.0 * sr), 'hold', 1)], repeat=0, reverb=6)
 ref = np.abs(np.diff(w[int(0.5 * sr):int(0.9 * sr)])).max()
 step = np.abs(np.diff(w[int(0.98 * sr):int(3 * sr)])).max()
 check('hold engage and loop seam click-free', step < 1.5 * ref, 'step %.3f vs signal %.3f' % (step, ref))
+
+# 15. Safety: caps the wet output at the Ceiling while the loop runs away inside
+t = np.arange(int(8 * sr)) / sr
+x = 0.2 * np.sin(2 * np.pi * 196 * t) * (t < 0.4)
+_, w = run(x, sr, repeat=10, reverb=8, tone=8, safety=0)
+loud = db(np.abs(w[4 * sr:]).max())
+check('runaway without Safety goes past -6 dBFS', loud > -3, '%.1f dBFS' % loud)
+for c in (-6, -12, -24):
+    m, w = run(x, sr, repeat=10, reverb=8, tone=8, ceiling=c)
+    pk, rm = db(np.abs(w[4 * sr:]).max()), db(rms(w[4 * sr:]))
+    check('Safety holds the runaway at %d dBFS (and keeps oscillating)' % c, pk <= c + 0.1 and rm > c - 10,
+          'peak %.1f, rms %.1f dBFS' % (pk, rm))
+
+# 16. No ticks: musical plucks (smooth envelopes) through hard settings, Safety off.
+#     A tick = a burst of >12 kHz energy far above its surroundings.
+from scipy.signal import butter as _bt, sosfilt as _sf
+_hp = _bt(4, 12000, 'highpass', fs=sr, output='sos')
+def tick_count(w):
+    h = np.abs(_sf(_hp, w)); e = np.sqrt(np.convolve(h ** 2, np.ones(96) / 96, 'same'))
+    bg = np.convolve(e, np.ones(4800) / 4800, 'same') + 1e-7
+    idx = np.nonzero((e / bg)[4800:-4800] > 8)[0]
+    return len([i for k, i in enumerate(idx) if k == 0 or i - idx[k - 1] > 2400])
+t = np.arange(int(10 * sr)) / sr
+x = np.zeros_like(t)
+for k, f in enumerate([196, 247, 147, 330, 220, 165]):
+    n = int((0.2 + 1.5 * k) * sr); L = int(1.2 * sr); a = np.arange(L)
+    env = np.exp(-a / (0.3 * sr)) * np.minimum(1, a / (0.002 * sr)) * np.minimum(1, (L - a) / (0.05 * sr))
+    x[n:n + L] += 0.15 * env * np.sin(2 * np.pi * f * a / sr)
+worst, hot = 0, -99.0
+for kw in (dict(repeat=7, reverb=7), dict(repeat=10, reverb=10, sag=10, wear=10), dict(repeat=10, reverb=5, time=60),
+           dict(repeat=10, reverb=5, time=40, disc_size=0, wobble=10), dict(repeat=9, reverb=6, tone=10),
+           dict(repeat=10, reverb=10, disc_size=0, wobble=10), dict(repeat=7, reverb=7, time=1500)):
+    m, w = run(x, sr, safety=0, **kw)
+    worst = max(worst, tick_count(w)); hot = max(hot, db(np.abs(m).max()), db(np.abs(w).max()))
+check('no ticks across runaway settings (Safety off)', worst == 0, '%d tick(s)' % worst)
+check('outputs never reach 0 dBFS (soft knee)', hot < 0.0, 'hottest %.1f dBFS' % hot)
+
+# 17. One runaway path: Reverb alone or with Repeat below the wild zone never runs away
+t = np.arange(int(10 * sr)) / sr
+x = 0.2 * np.sin(2 * np.pi * 196 * t) * np.minimum(1, t / 0.01) * (t < 0.4)
+_, w = run(x, sr, repeat=8.5, reverb=10, safety=0, wear=0, wobble=0)
+late, early = rms(w[8 * sr:]), rms(w[int(0.5 * sr):int(1.5 * sr)])
+check('Repeat 8.5 + Reverb 10 dies away (long tail, no runaway)', late < early * 0.3, '%.1f dB over 7 s' % db(late / early))
+_, w = run(x, sr, repeat=10, reverb=0, safety=0, wear=0, wobble=0)
+check('Repeat 10 alone runs away', rms(w[8 * sr:]) > 0.05, '%.1f dBFS rms' % db(rms(w[8 * sr:])))
 
 print('\n%d failure(s)' % fails)
 sys.exit(1 if fails else 0)

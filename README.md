@@ -23,15 +23,17 @@ There's no tape and no erase head. A spinning disc in a can of oil holds the sig
 | Control | What it does |
 | --- | --- |
 | Time | Motor speed: 40 ms to 2 s (747 ms marks the Morley's ceiling). Sweeps bend pitch |
-| Repeat | Feedback from the read wiper back to the write wiper; can run away |
-| Reverb | Charge the disc keeps each revolution: the oil-can smear |
+| Repeat | Echoes: the read wiper is fed back to the write wiper through the tubes. Up to 9 behaves as usual; 9 to 10 is the wild zone, where it runs away and overdrives |
+| Reverb | Wash: charge the disc keeps each revolution, spreading wider every turn. It backs off as Repeat nears the edge, so only Repeat can run away |
 | Tone | Tilt EQ on the echoes: properly dull at 0, bright at 10 |
 | Wobble | Motor, belt and runout warble; 5 = stock, 10 = about 4x |
 | Disc Size | 5 = stock. Bigger (to 2x) = brighter, steadier, heavier. Smaller (to a quarter) = darker, warblier, twitchier |
 | Wear | A worn disc: speed and level wobbles tied to disc position, so they repeat every revolution and build in the tails. 0 = new, 3 = stock, 10 = beaten up |
 | Mix | Dry/wet on Mix Out |
 | Sag | Tube supply droop on hard hits, plus a motor slip that dips the pitch (up to about a semitone) |
+| Ceiling | The loudest the echoes can get at the outputs, −24 to 0 dBFS (with Safety on). Either way, the outputs never hard-clip |
 | Hold | Freezes the disc (latching); Time still varispeeds the loop |
+| Safety | Limits the wet output to the Ceiling. The runaway still happens inside the can; it just can't bury the mix. On by default |
 | Tails | Bypass lets the repeats ring out |
 | Effect | Bypass, click-free; dry at unity |
 

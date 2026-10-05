@@ -20,6 +20,8 @@
         [ lv2:index 6 ; lv2:symbol "wear" ; lv2:name "Wear" ; ],
         [ lv2:index 7 ; lv2:symbol "mix" ; lv2:name "Mix" ; ],
         [ lv2:index 8 ; lv2:symbol "sag" ; lv2:name "Sag" ; ],
-        [ lv2:index 9 ; lv2:symbol "hold" ; lv2:name "Hold" ; ],
-        [ lv2:index 10 ; lv2:symbol "tails" ; lv2:name "Tails" ; ] ;
+        [ lv2:index 9 ; lv2:symbol "ceiling" ; lv2:name "Ceiling" ; ],
+        [ lv2:index 10 ; lv2:symbol "hold" ; lv2:name "Hold" ; ],
+        [ lv2:index 11 ; lv2:symbol "safety" ; lv2:name "Safety" ; ],
+        [ lv2:index 12 ; lv2:symbol "tails" ; lv2:name "Tails" ; ] ;
     ] .

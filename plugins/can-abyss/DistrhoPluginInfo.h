@@ -20,7 +20,9 @@ enum Parameters {
     kWear,
     kMix,
     kSag,
+    kCeiling,
     kHold,
+    kSafety,
     kTails,
     kBypass,
     kParameterCount

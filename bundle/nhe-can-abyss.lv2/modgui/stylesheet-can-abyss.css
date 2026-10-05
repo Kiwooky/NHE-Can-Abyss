@@ -29,6 +29,7 @@
 .canabyss{{{cns}}} .ca-mix       { left: 370px; top: 66px; }
 .canabyss{{{cns}}} .ca-wear      { left: 200px; top: 162px; }
 .canabyss{{{cns}}} .ca-sag       { left: 285px; top: 162px; }
+.canabyss{{{cns}}} .ca-ceiling   { left: 370px; top: 162px; }
 
 /* toggles: 100x62 frames [LED off | LED on]; switch widget, class "on" = value max */
 .canabyss{{{cns}}} .ca-toggle {
@@ -41,6 +42,7 @@
     cursor: pointer;
     z-index: 21;
 }
+.canabyss{{{cns}}} .ca-safety     { left: 503px; top: 70px; }
 .canabyss{{{cns}}} .ca-tails      { left: 503px; top: 154px; }
 .canabyss{{{cns}}} .ca-toggle.off { background-position: 0 0; }
 .canabyss{{{cns}}} .ca-toggle.on  { background-position: -100px 0; }

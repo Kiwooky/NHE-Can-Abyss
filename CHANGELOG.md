@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.3 — 2026-10-05
+
+After the 1.0.2 test (digital ticks; Repeat and Reverb felt like the same knob).
+
+- **Ticks fixed.** Two causes found: the output going past 0 dBFS (up to +3.8 dBFS with Repeat high and Tone bright) and hard-clipping at the converter; and short-time runaways re-sharpening their own edges every lap. Now: 2x oversampled tube and disc stages, loop bandwidth capped at 5.5 kHz plus a gentle 6 kHz roll-off in the Repeat path, and a soft knee just under 0 dBFS on both outputs. A new test plays plucks through seven hard settings and finds no ticks.
+- **Repeat and Reverb now do different jobs.** Repeat = echoes. Reverb = wash: two diffusers spread the leftover charge, so each revolution comes back wider (0.6 ms, then 8 ms, then 16 ms) instead of as a second clean echo.
+- **One runaway path.** Reverb backs off as Repeat nears unity, so only Repeat tips it over. The last notch of Repeat (9 to 10) is the wild zone: loop gain climbs to 1.4 for hard, overdriven oscillation; once it runs away, Reverb adds some density back.
+- **Safety** switch and **Ceiling** knob (−24 to 0 dBFS, default −6): a lookahead limiter (2 ms) with a soft knee on the wet output only. Repeat can still run away inside the can; only what reaches the outputs is capped. Normal echoes pass untouched. The loop is shortened by the lookahead, so echo timing stays exact.
+- New ports `ceiling` (after Sag) and `safety` (after Hold): re-add the plugin to test pedalboards.
+- CPU: about 1.2x Taj Mahal, level with MultiPlay (was 0.7–0.9x before oversampling).
+
 ## 1.0.2 — 2026-10-05
 
 - Hold is latching by default (was momentary): press to freeze, press again to release.

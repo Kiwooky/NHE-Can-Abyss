@@ -36,7 +36,7 @@ No schematic or recording of a real unit has been used yet. All mappings below a
 
 ## Signal flow
 
-Two loops make the sound: Repeat feeds the read wiper back to the write wiper, and Reverb keeps leftover charge circling the disc.
+Two loops make the sound: Repeat feeds the read wiper back to the write wiper (echoes), and Reverb keeps leftover charge circling the disc, spreading wider each turn (wash). Only Repeat can run away.
 
 ```mermaid
 flowchart LR
@@ -61,7 +61,7 @@ The motor sets where the read point sits, so Time, Wobble, Disc Size, Wear and S
 
 ## Ports
 
-Mono in, two outs, 12 controls in enum order. Hand-written TTL must match this table index for index. (1.0.1 removed the noise ports and added Wear; ports freeze before the first public release.)
+Mono in, two outs, 14 controls in enum order. Hand-written TTL must match this table index for index. (1.0.1 removed the noise ports and added Wear; 1.0.3 added Ceiling and Safety; ports freeze before the first public release.)
 
 | # | Symbol | Name | Range | Default | Notes |
 | --- | --- | --- | --- | --- | --- |
@@ -77,11 +77,13 @@ Mono in, two outs, 12 controls in enum order. Hand-written TTL must match this t
 | 9 | `wear` | Wear | 0–10 | 3 | 0 = new disc; 3 = stock |
 | 10 | `mix` | Mix | 0–100 % | 50 | Mix Out only |
 | 11 | `sag` | Sag | 0–10 | 0 | 0 = off |
-| 12 | `hold` | Hold | toggle | 0 | Latching |
-| 13 | `tails` | Tails | toggle | 1 | Bypass keeps repeats |
-| 14 | `lv2_enabled` | Enabled | bypass | 1 | `lv2:enabled` designation, last |
+| 12 | `ceiling` | Ceiling | −24–0 dB | −6 | Wet output limit (Safety on) |
+| 13 | `hold` | Hold | toggle | 0 | Latching |
+| 14 | `safety` | Safety | toggle | 1 | Limiter on the wet output |
+| 15 | `tails` | Tails | toggle | 1 | Bypass keeps repeats |
+| 16 | `lv2_enabled` | Enabled | bypass | 1 | `lv2:enabled` designation, last |
 
-Defaults for Repeat, Reverb, Tone and Mix are placeholders until tuned by ear. Version `d_version(1,0,2)` = minorVersion 2, microVersion 2.
+Defaults for Repeat, Reverb, Tone and Mix are placeholders until tuned by ear. Version `d_version(1,0,3)` = minorVersion 2, microVersion 3.
 
 ## Mappings (all guesses)
 
@@ -93,15 +95,19 @@ Starting values to tune by ear; none are measured from a real unit. Knobs are 0�
 | Revolution | P = T / 0.9 (read wiper at 324°) | Residual repeats at T + nP |
 | Motor inertia | speed slews with τ = 200 ms × S | Glide on varispeed; S = Disc Size factor |
 | Disc Size factor | S = 2^((knob − 5)/2.5) below 5, 2^((knob − 5)/5) above; range 0.25–2 | 5 = stock; 0 = quarter size |
-| Bandwidth | fc = 3.5 kHz × √(S × 350 ms / T), clamped 0.8–8 kHz | Slow or small disc = darker |
-| Reverb | residual r = 0.85x per revolution, plus a one-pole loss per pass (1.5 × fc) | Stock r ≈ 0.43 |
-| Repeat | loop gain = 1.1 × x^1.2 | Over 1 runs away; tanh stage catches it |
+| Bandwidth | fc = 3.5 kHz × √(S × 350 ms / T), clamped 0.8–5.5 kHz; plus a 6 kHz one-pole in the Repeat path | Slow or small disc = darker; caps stop short-time runaways ticking |
+| Reverb | residual r = 0.85x per revolution, a one-pole loss (1.5 × fc) and two allpass diffusers (3.1 + 7.3 ms, g 0.6) per pass; tap moved 10.4 ms earlier so the wash centres on the revolution | Measured: passes 0.6 / 8.4 / 16.2 ms wide |
+| One runaway path | r_eff = min(r, 0.92 × (1 − g)), plus 0.25 r once g passes 1 | Only Repeat can tip it over |
+| Repeat | g = 1.1 × x^1.2 up to 9, then linear to 1.4 at 10 (the wild zone) | Unity at about 9.2; runaway peaks about −2 dBFS |
 | Tone | tilt around 1.2 kHz: highs −24 dB / lows +3 dB (0) … flat (5) … highs +9 dB / lows −6 dB (10) | Out of the loop |
 | Wobble depth | W = knob/5 up to 5, then 1 + 3 × ((knob − 5)/5)^1.5 (4 at 10) | Measured: 3.7× stock at 10 |
 | Wobble, per rev | ±0.045% of the revolution × W ÷ S, once per rev | Locked to disc speed |
 | Wobble, belt + flutter | 0.37 + 0.61 Hz drift (0.12%) + 3–10 Hz flutter (0.004%), × W ÷ S × stock speed ÷ current speed | Measured: 4.5 cents RMS stock, the same at any Time |
 | Sag, supply | follower 5 ms / 150 ms, full at about −20 dBFS (guitar level); up to 12 dB droop on the write stage | Measured: 4.4 dB less sustain at Sag 10 |
 | Sag, motor slip | up to −5% ÷ S speed (capped at 15%) × x, recovering with motor inertia | Measured: hard hit dips 25 / 42 / 87 cents at Sag 3 / 5 / 10 |
+| Safety / Ceiling | 2 ms lookahead: peak follower (0.5 ms attack, 150 ms release) sets a gain so the wet never exceeds the Ceiling, then a soft knee from 85% to 100% of it; after Tone, outside the loops | Measured: a runaway peaking at −2.4 dBFS held at exactly −6 / −12 / −24 dBFS, still oscillating |
+| Output protection | soft knee from −1 dBFS on both outputs, always on, approaching but never reaching 0 dBFS | No hard clip at the converter, Safety on or off |
+| Saturation | write, disc and read stages run 2× oversampled (midpoint interpolation, 2-tap average) | Stops edges aliasing every lap |
 | Wear | speed: ±0.12% of the revolution × x² ÷ S on a smooth 2nd–8th-harmonic profile; level: worn patches dipping up to 6 dB × x² | Measured: 5.8 cents at 3 (stock), 40 at 10 |
 
 ## Wear
@@ -116,14 +122,14 @@ What the first test showed: the Disc noise was useful only for the extra movemen
 
 ## CPU and memory
 
-Measured relative cost: about 0.7× Taj Mahal, the cheapest of the three New Horizon plugins (Duo build under emulation, `tools/bench.py`; 1.0.0 with the noise section was 1.25×). The absolute load is only known from the Duo's meter. Cost per sample stays flat from 40 ms to 2 s.
+Measured relative cost: about 1.2× Taj Mahal, level with the MultiPlay (Duo build under emulation, `tools/bench.py`). The 2× oversampled saturation and the diffusers cost about a third more than 1.0.2. The absolute load is only known from the Duo's meter. Cost per sample stays flat from 40 ms to 2 s.
 
 | Block | Cost | How |
 | --- | --- | --- |
 | Delay line + residual tap | Medium | Hermite read at the wiper, linear read at the revolution tap, one write |
 | Per-pass smear | Tiny | One one-pole filter in the residual loop |
 | Wobble, flutter, slip, wear | Small | Parabolic sine; flutter noise at control rate; two table reads per sample |
-| Tube stages ×3 | Small | Rational tanh, no oversampling |
+| Tube stages ×3 | Small–medium | Rational tanh, 2× oversampled |
 | Tone + bandwidth | Small | One biquad (retuned every 16 samples) + one-pole tilt |
 | Disc Size, Sag maths | Free / tiny | Control rate every 16 samples, smoothed |
 
@@ -137,26 +143,29 @@ Measured relative cost: about 0.7× Taj Mahal, the cheapest of the three New Hor
 
 The standard rig (native, arm32, arm64; TTL vs DPF generator; lv2info; lv2host; qemu match), plus these oil-can checks. All pass in `tools/catest.py` on the native and Duo builds.
 
-- [x] Impulse: first echo at T, residual repeats every P = T/0.9, each pass darker and quieter (44.1/48/96 kHz)
+- [x] Impulse: first echo at T; Reverb returns centred on every revolution, each pass wider, darker and quieter (44.1/48/96 kHz)
 - [x] Time sweep 40 ms → 2 s and back: no NaN/Inf, bounded
 - [x] Long times darken by themselves; Disc Size 10 restores brightness
-- [x] Repeat 10 + Reverb 10 + Sag 10 + everything at max: finite and bounded
+- [x] Everything at max: finite and bounded
 - [x] Hold: loop keeps spinning, ignores new input, varispeeds with Time (×2 = octave down), click-free in and out
 - [x] Clean: silence in, silence out with Wear, Sag, Wobble and Disc Size at their extremes
 - [x] Tone: much duller at 0, brighter at 10
 - [x] Sag at guitar level: hard hits dip the pitch more than 50 cents at 10; sustain droops more than 3 dB
 - [x] Bypass with Tails on and off: dry at unity, click-free
 - [x] Warble: 3–6 cents RMS stock, independent of Time; Wobble 10 and the quarter-size disc each 3–4.5×; big disc steadier; Wear 3 a light touch, Wear 10 more than 5×
+- [x] Safety: a runaway that peaks at −2.4 dBFS without it is held at the Ceiling (−6, −12, −24) and keeps oscillating
+- [x] No ticks: plucks through seven hard settings, Safety off; outputs never reach 0 dBFS
+- [x] One runaway path: Repeat 8.5 + Reverb 10 decays; Repeat 10 alone runs away
 - [x] CPU benchmark against Taj Mahal and MultiPlay
 - [x] First hardware test (1.0.0): noise cut, ranges widened
-- [ ] 1.0.1 on the Duo, including the CPU meter
+- [ ] 1.0.3 on the Duo, including the CPU meter
 
 ## Face notes
 
-Nine knobs, three switches. The first release ships a **placeholder face** (borrowed MultiPlay knob and switch art); the real artwork replaces it.
+Ten knobs, four switches. The first release ships a **placeholder face** (borrowed MultiPlay knob and switch art); the real artwork replaces it.
 
-- **Knobs:** Time, Repeat, Reverb, Tone, Mix; Wobble, Disc Size, Wear, Sag.
-- **Switches:** Hold, Tails, Bypass (LED lit when active).
+- **Knobs:** Time, Repeat, Reverb, Tone, Mix; Wobble, Disc Size, Wear, Sag, Ceiling.
+- **Switches:** Hold, Safety, Tails, Bypass (LED lit when active).
 - **Time scale:** 747 marked as the faithful line; past it is the "slow motor" zone.
 - **Jacks:** label Mix Out and Wet Out so they aren't mistaken for stereo.
 - **Assets from Niels:** background with black placeholder holes, knob body and marker layers, button on/off states.

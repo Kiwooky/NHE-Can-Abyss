@@ -43,6 +43,11 @@ static const float    kWobDrift = 0.0012f;       // belt drift, 0.37 + 0.61 Hz
 static const float    kWobFlut  = 0.00004f;      // motor flutter, 3-10 Hz
 static const float    kWearPitch = 0.0012f;      // worn disc at Wear 10: speed irregularity
 static const float    kWearDip   = 0.5f;         // ... and up to -6 dB level dips
+static const float    kApG      = 0.6f;
+static const uint32_t kApSize   = 1024;          // residual diffusers (<= 10 ms at 96 kHz)
+static const uint32_t kLaSize   = 256;           // limiter lookahead (<= 2.6 ms at 96 kHz)
+
+
 
 static inline float clampf(float x, float lo, float hi)
 {
@@ -61,6 +66,24 @@ static inline float softClip(float x)
     if (x < -3.0f) return -1.0f;
     const float x2 = x * x;
     return x * (27.0f + x2) / (27.0f + 9.0f * x2);
+}
+
+// 2x oversampled saturators: linear-interpolated midpoint, nonlinearity at
+// both points, 2-tap average back down. Cheap, and it stops the loop
+// re-sharpening (and aliasing) its own edges on every pass.
+static inline float writeCurve(float u)
+{
+    return (softClip(1.5f * u + 0.1f) - kClipBias) * (1.0f / 1.5f);   // tube: drive 1.5, bias 0.1
+}
+static inline float discCurve(float d) { return 1.6f * softClip(d * (1.0f / 1.6f)); }
+
+// soft knee: linear below k, smoothly approaching k + r (never above)
+static inline float softKnee(float x, float k, float r)
+{
+    const float a = std::fabs(x);
+    if (a <= k) return x;
+    const float y = k + r * softClip((a - k) / r);   // slope 1 at the knee, never above k + r
+    return x < 0.0f ? -y : y;
 }
 
 // Parabolic sine of a phase in [0, 1).
@@ -123,7 +146,9 @@ public:
         fParams[kWear]      = 3.0f;
         fParams[kMix]       = 50.0f;
         fParams[kSag]       = 0.0f;
+        fParams[kCeiling]   = -6.0f;
         fParams[kHold]      = 0.0f;
+        fParams[kSafety]    = 1.0f;
         fParams[kTails]     = 1.0f;
         fParams[kBypass]    = 0.0f;
 
@@ -138,7 +163,7 @@ protected:
     const char* getMaker()       const override { return "New Horizon Electronics"; }
     const char* getHomePage()    const override { return "https://github.com/Kiwooky/NHE-Can-Abyss"; }
     const char* getLicense()     const override { return "MIT"; }
-    uint32_t    getVersion()     const override { return d_version(1, 0, 2); }
+    uint32_t    getVersion()     const override { return d_version(1, 0, 3); }
     int64_t     getUniqueId()    const override { return d_cconst('C', 'A', 'B', 'Y'); }
 
     void initParameter(uint32_t index, Parameter& p) override
@@ -179,6 +204,15 @@ protected:
         case kSag:
             p.name = "Sag"; p.symbol = "sag"; p.ranges.def = 0.0f;
             break;
+        case kCeiling:
+            p.name = "Ceiling"; p.symbol = "ceiling"; p.unit = "dB";
+            p.ranges.min = -24.0f; p.ranges.max = 0.0f; p.ranges.def = -6.0f;
+            break;
+        case kSafety:
+            p.hints |= kParameterIsInteger | kParameterIsBoolean;
+            p.name = "Safety"; p.symbol = "safety";
+            p.ranges.max = 1.0f; p.ranges.def = 1.0f;
+            break;
         case kHold:
             p.hints |= kParameterIsInteger | kParameterIsBoolean;
             p.name = "Hold"; p.symbol = "hold";
@@ -213,6 +247,13 @@ protected:
         fFast    = onePoleCoef(1.0f / (2.0f * kPi * 0.010f), fSr);   // 10 ms
         fSagAtk  = onePoleCoef(1.0f / (2.0f * kPi * 0.005f), fSr);
         fSagRel  = onePoleCoef(1.0f / (2.0f * kPi * 0.150f), fSr);
+        fLimAtk  = onePoleCoef(1.0f / (2.0f * kPi * 0.0005f), fSr);  // 0.5 ms, inside the 2 ms lookahead
+        fLa      = (uint32_t)(0.002f * fSr + 0.5f);
+        if (fLa > kLaSize - 1) fLa = kLaSize - 1;
+        fAp1D    = (uint32_t)(0.0031f * fSr);
+        fAp2D    = (uint32_t)(0.0073f * fSr);
+        fRegCoef = onePoleCoef(6000.0f, fSr);
+        fLimRel  = onePoleCoef(1.0f / (2.0f * kPi * 0.150f), fSr);   // 150 ms
         fToneLp  = onePoleCoef(1200.0f, fSr);
         fDcCoef  = onePoleCoef(20.0f, fSr);
         fFlutLpC = onePoleCoef(10.0f, fSr / (float)kCtl);
@@ -234,7 +275,10 @@ protected:
         std::memset(fBuf, 0, sizeof(fBuf));
         fW = 0;
         fReadLp.clear(); fResLp = 0.0f; fDcX = fDcY = 0.0f; fToneState = 0.0f;
-        fY = 0.0f; fSagEnv = 0.0f;
+        fY = 0.0f; fSagEnv = 0.0f; fLimEnv = 0.0f; fLimG = 1.0f;
+        std::memset(fAp1, 0, sizeof(fAp1)); std::memset(fAp2, 0, sizeof(fAp2));
+        std::memset(fLaY, 0, sizeof(fLaY)); std::memset(fLaT, 0, sizeof(fLaT));
+        fApW = 0; fLaW = 0; fUPrev = fDPrev = fRPrev = 0.0f; fRegLp = 0.0f; fResidS = 0.0f;
         fTheta = 0.0f; fDp1 = 0.0f; fDp2 = 0.3f; fFl1 = fFl2 = 0.0f;
         fM = 0.0f;
         fHolding = false; fHoldMix = 0.0f;
@@ -251,8 +295,16 @@ protected:
         // --- controls ------------------------------------------------------
         const float timeMs  = clampf(fParams[kTime], 40.0f, 2000.0f);
         const float xRep    = clampf(fParams[kRepeat] / 10.0f, 0.0f, 1.0f);
-        const float gRepeat = 1.1f * std::pow(xRep, 1.2f);
+        // Repeat: as before up to 9 (unity at about 9.2); the last notch is the
+        // wild zone, climbing to 1.4 so a runaway overdrives hard
+        const float gRepeat = xRep <= 0.9f ? 1.1f * std::pow(xRep, 1.2f)
+                                           : 0.96936f + (xRep - 0.9f) * 4.3064f;   // continuous at 9, 1.4 at 10
         const float resid   = 0.85f * clampf(fParams[kReverb] / 10.0f, 0.0f, 1.0f);
+        // One runaway path: the two loops add, so Reverb backs off as Repeat
+        // nears unity (only Repeat can tip it over), then adds some density
+        // back once Repeat has run away.
+        const float residEff = std::fmin(resid, std::fmax(0.92f * (1.0f - gRepeat), 0.0f))
+                             + 0.25f * resid * clampf((gRepeat - 1.0f) * 10.0f, 0.0f, 1.0f);
 
         // Tone: tilt around 1.2 kHz. Dull end: highs -24 dB, lows +3 dB.
         // Bright end: highs +9 dB, lows -6 dB.
@@ -279,6 +331,10 @@ protected:
         const float xSag    = clampf(fParams[kSag] / 10.0f, 0.0f, 1.0f);
         const bool  hold    = fParams[kHold] > 0.5f;
         const bool  tails   = fParams[kTails] > 0.5f;
+        // Safety: a limiter on the wet output only. The loops inside the can
+        // still run away and overdrive; only what reaches the outputs is capped.
+        const bool  safety  = fParams[kSafety] > 0.5f;
+        const float ceilTarget = safety ? std::pow(10.0f, clampf(fParams[kCeiling], -24.0f, 0.0f) / 20.0f) : 8.0f;
         const bool  bypass  = fParams[kBypass] > 0.5f;
 
         // motor: target revolution in samples, inertia grows with disc mass
@@ -296,6 +352,8 @@ protected:
             fP = pTarget;
             fInGain = inTarget; fWetGain = wetTarget;
             fToneHi = toneHi; fToneLo = toneLo;
+            fCeil = ceilTarget;
+            fResidS = residEff;
             fHolding = hold; fHoldMix = 0.0f;
             if (hold) startHold();
         }
@@ -328,7 +386,7 @@ protected:
             if (fCtlCount == 0) {
                 fCtlCount = kCtl;
                 const float T = fP * kWiper / sr;           // current first-echo time, s
-                const float fc = clampf(3500.0f * std::sqrt(S * 0.35f / T), 800.0f, 8000.0f);
+                const float fc = clampf(3500.0f * std::sqrt(S * 0.35f / T), 800.0f, 5500.0f);
                 fReadLp.setLowpass(fc, 0.6f, sr);
                 fResCoef = onePoleCoef(1.5f * fc, sr);
                 fInvP = 1.0f / fP;
@@ -346,6 +404,7 @@ protected:
             fWetGain += fFast * (wetTarget - fWetGain);
             fToneHi  += fFast * (toneHi - fToneHi);
             fToneLo  += fFast * (toneLo - fToneLo);
+            fCeil    += fFast * (ceilTarget - fCeil);
 
             // --- sag: tube supply droop + motor slip ----------------------
             const float u = fInGain * x + gRepeat * fWetGain * fY;
@@ -379,18 +438,30 @@ protected:
                + wearP * wsp;
 
             const float pMod = P * (1.0f + fM);
-            const float tau  = clampf(kWiper * pMod, 4.0f, fMaxDelay);
-            const float pRes = clampf(pMod, 4.0f, fMaxDelay);
+            const float tau  = clampf(kWiper * pMod - (float)fLa, 4.0f, fMaxDelay);
+            const float pRes = clampf(pMod - (float)(fAp1D + fAp2D), 4.0f, fMaxDelay);   // the diffusers add their length back
 
             // --- write: tube stage + disc --------------------------------
-            const float drive = 1.5f;
-            const float bias  = 0.1f;               // tube bias: a touch of even harmonics
             const float w = (1.0f - 0.75f * sagAmt)                     // up to -12 dB droop
-                          * (softClip(drive * u + bias) - kClipBias) * (1.0f / drive);
+                          * 0.5f * (writeCurve(0.5f * (u + fUPrev)) + writeCurve(u));
+            fUPrev = u;
 
             const float resIn = readTapLin(fW, pRes);   // residual is low-passed anyway
             fResLp += fResCoef * (resIn - fResLp);
-            const float dSig = w + resid * fWetGain * fResLp;
+            // leftover charge spreads on the disc: two diffusers turn each
+            // revolution into a wash instead of a second clean echo
+            float rv = fResLp;
+            {
+                const float b1 = fAp1[(fApW - fAp1D) & (kApSize - 1)];
+                const float v1 = rv - kApG * b1;
+                fAp1[fApW] = v1; rv = kApG * v1 + b1;
+                const float b2 = fAp2[(fApW - fAp2D) & (kApSize - 1)];
+                const float v2 = rv - kApG * b2;
+                fAp2[fApW] = v2; rv = kApG * v2 + b2;
+                fApW = (fApW + 1) & (kApSize - 1);
+            }
+            fResidS += fFast * (residEff - fResidS);
+            const float dSig = w + fResidS * fWetGain * rv;
 
             float y0 = 0.0f;
             if (!fHolding)
@@ -420,27 +491,47 @@ protected:
             }
 
             if (!fHolding) {
-                fBuf[fW] = 1.6f * softClip(dSig * (1.0f / 1.6f)) + 1e-18f;   // charge saturates
+                fBuf[fW] = 0.5f * (discCurve(0.5f * (dSig + fDPrev)) + discCurve(dSig)) + 1e-18f;   // charge saturates
+                fDPrev = dSig;
                 fW = (fW + 1) & kBufMask;
             }
 
             // --- read stage: worn-disc level dips, wiper bandwidth, tube --
             float r = y0 * (1.0f - wearA * wlv);
             r = fReadLp.process(r);
-            const float yr = softClip(r);
+            const float yr = 0.5f * (softClip(0.5f * (r + fRPrev)) + softClip(r));
+            fRPrev = r;
             // DC blocker (the tube stages are biased)
             const float yd = yr - fDcX + (1.0f - fDcCoef) * fDcY;
             fDcX = yr; fDcY = yd;
-            fY = yd;
 
             // --- tone (tilt EQ, out of the loop) ------------------------
             fToneState += fToneLp * (yd - fToneState);
-            const float wet = (fToneLo * fToneState + fToneHi * (yd - fToneState)) * fWetGain;
+            const float toned = (fToneLo * fToneState + fToneHi * (yd - fToneState)) * fWetGain;
 
-            // --- outputs --------------------------------------------------
+            // --- 2 ms lookahead: the read tap is 2 ms early, so the loop and
+            // the outputs both take the signal from this short delay and the
+            // timing stays exact. The limiter sees what is coming.
+            fLaY[fLaW] = yd;
+            fLaT[fLaW] = toned;
+            const uint32_t ro = (fLaW - fLa) & (kLaSize - 1);
+            fLaW = (fLaW + 1) & (kLaSize - 1);
+            const float yLoop = fLaY[ro];
+            float wet = fLaT[ro];
+            fRegLp += fRegCoef * (yLoop - fRegLp);    // gentle roll-off in the Repeat path
+            fY = fRegLp;
+
+            // --- Safety: limiter on the wet output only ------------------
+            const float at = std::fabs(toned);
+            fLimEnv += (at > fLimEnv ? fLimAtk : fLimRel) * (at - fLimEnv);
+            const float gT = fLimEnv > fCeil ? fCeil / fLimEnv : 1.0f;
+            fLimG += (gT < fLimG ? fLimAtk : fLimRel) * (gT - fLimG);
+            wet = softKnee(wet * fLimG, 0.85f * fCeil, 0.15f * fCeil);
+
+            // --- outputs: never a hard clip at the converter --------------
             const float dry = 1.0f + fInGain * (mixDry - 1.0f);  // bypassed: dry at unity
-            outMix[i] = dry * x + mixWet * wet;
-            outWet[i] = wet;
+            outMix[i] = softKnee(dry * x + mixWet * wet, 0.89f, 0.1f);
+            outWet[i] = softKnee(wet, 0.89f, 0.1f);
         }
     }
 
@@ -487,7 +578,7 @@ private:
         // wiper; the reader starts exactly where the read wiper was
         fHoldW  = fW;
         fHoldP  = clampf(fP, 8.0f, fMaxDelay);
-        fHoldPh = fHoldP - clampf(kWiper * fP * (1.0f + fM), 4.0f, fHoldP - 1.0f);
+        fHoldPh = fHoldP - clampf(kWiper * fP * (1.0f + fM) - (float)fLa, 4.0f, fHoldP - 1.0f);
         fHoldMix = 1.0f;
     }
 
@@ -540,7 +631,10 @@ private:
     float fResLp = 0.0f, fResCoef = 0.1f;
     float fDcX = 0.0f, fDcY = 0.0f, fDcCoef = 0.0f, fToneState = 0.0f, fToneLp = 0.0f;
     float fToneHi = 1.0f, fToneLo = 1.0f;
-    float fY = 0.0f, fSagEnv = 0.0f;
+    float fY = 0.0f, fSagEnv = 0.0f, fLimEnv = 0.0f, fCeil = 0.5f, fLimAtk = 0.0f, fLimRel = 0.0f, fLimG = 1.0f;
+    float fAp1[kApSize], fAp2[kApSize], fLaY[kLaSize], fLaT[kLaSize];
+    uint32_t fApW = 0, fAp1D = 149, fAp2D = 350, fLaW = 0, fLa = 96;
+    float fUPrev = 0.0f, fDPrev = 0.0f, fRPrev = 0.0f, fRegLp = 0.0f, fRegCoef = 0.5f, fResidS = 0.0f;
     float fP = 16800.0f, fTheta = 0.0f, fM = 0.0f;
     float fDp1 = 0.0f, fDp2 = 0.3f, fFl1 = 0.0f, fFl2 = 0.0f, fFlutGain = 1.0f;
 

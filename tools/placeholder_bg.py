@@ -33,17 +33,15 @@ def label(cx, ty, text, f=small):
 cols = [61, 146, 231, 316, 401]
 for cx, t in zip(cols, ['TIME', 'REPEAT', 'REVERB', 'TONE', 'MIX']):
     label(cx, 134, t)
-for cx, t in zip(cols, ['WOBBLE', 'DISC SIZE', 'WEAR', 'SAG']):
+for cx, t in zip(cols, ['WOBBLE', 'DISC SIZE', 'WEAR', 'SAG', 'CEILING']):
     label(cx, 230, t)
 label(61, 147, '40 ms · 747 · 2 s', tiny)
 label(316, 147, 'dull · bright', tiny)
+label(401, 243, '-24 · 0 dBFS', tiny)
 
 # the mods corner
 d.rounded_rectangle((470, 58, 636, 246), radius=8, outline=quiet, width=1)
-d.text((482, 64), 'NEW HORIZON MODS', font=tiny, fill=quiet)
-d.text((482, 80), 'Disc Size · Wear · Sag', font=tiny, fill=quiet)
-d.text((482, 94), 'Hold freezes the disc;', font=tiny, fill=quiet)
-d.text((482, 106), 'Time still varispeeds it.', font=tiny, fill=quiet)
+label(553, 136, 'SAFETY')
 label(553, 222, 'TAILS')
 
 # footswitch row

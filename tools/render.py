@@ -29,7 +29,8 @@ import math
 tpos = math.log(350 / 40) / math.log(2000 / 40)          # Time knob is logarithmic
 extra += '.canabyss .ca-time{background-position:-%dpx 0}' % (round(tpos * 64) * 62)
 extra += '.canabyss .ca-mix{background-position:%s}' % knob(50, 0, 100)
-extra += '.canabyss .ca-tails{background-position:-100px 0}'
+extra += '.canabyss .ca-tails{background-position:-100px 0}.canabyss .ca-safety{background-position:-100px 0}'
+extra += '.canabyss .ca-ceiling{background-position:%s}' % knob(-6, -24, 0)
 extra += '.canabyss .ca-effect{background-position:-168px 0}'
 page = '<html><head><style>body{margin:0;background:transparent}%s%s</style></head><body>%s</body></html>' % (css, extra, html)
 tmp = os.path.join(ROOT, 'build', 'face.html')
