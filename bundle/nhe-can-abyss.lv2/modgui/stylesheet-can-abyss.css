@@ -1,0 +1,97 @@
+/* Can-Abyss Delay - New Horizon Electronics (650 x 400). PLACEHOLDER face:
+   borrowed MultiPlay knob and switch art until the Can-Abyss artwork lands. */
+.canabyss{{{cns}}} {
+    position: absolute;
+    width: 650px;
+    height: 400px;
+    background-image: url(/resources/background.jpg{{{ns}}});
+    background-size: 650px 400px;
+    background-repeat: no-repeat;
+    border-radius: 4px;
+}
+/* main knobs: 62x62 frames, 65 frames */
+.canabyss{{{cns}}} .ca-knob {
+    position: absolute;
+    width: 62px;
+    height: 62px;
+    background-image: url(/resources/knob.png{{{ns}}});
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    cursor: pointer;
+    z-index: 21;
+}
+.canabyss{{{cns}}} .ca-time      { left: 30px;  top: 66px; }
+.canabyss{{{cns}}} .ca-repeat    { left: 115px; top: 66px; }
+.canabyss{{{cns}}} .ca-reverb    { left: 200px; top: 66px; }
+.canabyss{{{cns}}} .ca-tone      { left: 285px; top: 66px; }
+.canabyss{{{cns}}} .ca-wobble    { left: 30px;  top: 162px; }
+.canabyss{{{cns}}} .ca-disc_size { left: 115px; top: 162px; }
+.canabyss{{{cns}}} .ca-mix       { left: 200px; top: 162px; }
+.canabyss{{{cns}}} .ca-sag       { left: 285px; top: 162px; }
+
+/* noise trims: the same strip drawn at 40 px (frames = strip width / element width) */
+.canabyss{{{cns}}} .ca-trim {
+    position: absolute;
+    top: 166px;
+    width: 40px;
+    height: 40px;
+    background-image: url(/resources/knob.png{{{ns}}});
+    background-size: auto 40px;
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    cursor: pointer;
+    z-index: 21;
+    transition: opacity 0.2s;
+}
+.canabyss{{{cns}}} .ca-disc_noise { left: 412px; }
+.canabyss{{{cns}}} .ca-hiss       { left: 492px; }
+.canabyss{{{cns}}} .ca-hum        { left: 572px; }
+/* locked: the trims are ignored by the DSP, so show them dimmed */
+.canabyss{{{cns}}} .ca-dim { opacity: 0.35; }
+
+/* toggles: 100x62 frames [LED off | LED on]; switch widget, class "on" = value max */
+.canabyss{{{cns}}} .ca-toggle {
+    position: absolute;
+    width: 100px;
+    height: 62px;
+    background-image: url(/resources/timemod.png{{{ns}}});
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    cursor: pointer;
+    z-index: 21;
+}
+.canabyss{{{cns}}} .ca-noise_mods { left: 400px; top: 64px; }
+.canabyss{{{cns}}} .ca-tails      { left: 462px; top: 270px; }
+.canabyss{{{cns}}} .ca-toggle.off { background-position: 0 0; }
+.canabyss{{{cns}}} .ca-toggle.on  { background-position: -100px 0; }
+.canabyss{{{cns}}} .ca-small {
+    left: 535px;
+    top: 74px;
+    width: 80px;
+    height: 50px;
+    background-size: 160px 50px;
+}
+.canabyss{{{cns}}} .ca-small.on { background-position: -80px 0; }
+
+/* footswitches: 168x139 frames [LED off | LED on] */
+.canabyss{{{cns}}} .ca-fs {
+    position: absolute;
+    top: 262px;
+    width: 168px;
+    height: 139px;
+    background-image: url(/resources/footswitch.png{{{ns}}});
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    cursor: pointer;
+    z-index: 21;
+}
+.canabyss{{{cns}}} .ca-hold { left: 30px; }
+.canabyss{{{cns}}} .ca-hold.off { background-position: 0 0; }
+.canabyss{{{cns}}} .ca-hold.on  { background-position: -168px 0; }
+.canabyss{{{cns}}} .ca-effect { left: 230px; }
+/* bypass widget: class "on" = bypassed -> LED off; "off" = active -> LED lit */
+.canabyss{{{cns}}} .ca-effect.on  { background-position: 0 0; }
+.canabyss{{{cns}}} .ca-effect.off { background-position: -168px 0; }
+
+.canabyss{{{cns}}} .mod-pedal-input,
+.canabyss{{{cns}}} .mod-pedal-output { top: 150px; }

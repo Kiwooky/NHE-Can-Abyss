@@ -1,0 +1,33 @@
+<div class="mod-pedal canabyss{{{cns}}}">
+    <div mod-role="drag-handle" class="mod-drag-handle"></div>
+    <div class="ca-knob ca-time" title="Time" mod-role="input-control-port" mod-port-symbol="time"></div>
+    <div class="ca-knob ca-repeat" title="Repeat" mod-role="input-control-port" mod-port-symbol="repeat"></div>
+    <div class="ca-knob ca-reverb" title="Reverb" mod-role="input-control-port" mod-port-symbol="reverb"></div>
+    <div class="ca-knob ca-tone" title="Tone" mod-role="input-control-port" mod-port-symbol="tone"></div>
+    <div class="ca-knob ca-wobble" title="Wobble" mod-role="input-control-port" mod-port-symbol="wobble"></div>
+    <div class="ca-knob ca-disc_size" title="Disc Size" mod-role="input-control-port" mod-port-symbol="disc_size"></div>
+    <div class="ca-knob ca-mix" title="Mix" mod-role="input-control-port" mod-port-symbol="mix"></div>
+    <div class="ca-knob ca-sag" title="Sag" mod-role="input-control-port" mod-port-symbol="sag"></div>
+    <div class="ca-toggle ca-noise_mods" title="Noise Mods" mod-widget="switch" mod-role="input-control-port" mod-port-symbol="noise_mods"></div>
+    <div class="ca-toggle ca-small ca-hum_hz" title="Hum Hz (50 / 60)" mod-widget="switch" mod-role="input-control-port" mod-port-symbol="hum_hz"></div>
+    <div class="ca-trim ca-disc_noise" title="Disc" mod-role="input-control-port" mod-port-symbol="disc_noise"></div>
+    <div class="ca-trim ca-hiss" title="Hiss" mod-role="input-control-port" mod-port-symbol="hiss"></div>
+    <div class="ca-trim ca-hum" title="Hum" mod-role="input-control-port" mod-port-symbol="hum"></div>
+    <div class="ca-toggle ca-tails" title="Tails" mod-widget="switch" mod-role="input-control-port" mod-port-symbol="tails"></div>
+    <div class="ca-fs ca-hold" title="Hold" mod-widget="switch" mod-role="input-control-port" mod-port-symbol="hold"></div>
+    <div class="ca-fs ca-effect" title="Effect" mod-role="bypass"></div>
+    <div class="mod-pedal-input">
+        {{#effect.ports.audio.input}}
+        <div class="mod-input mod-input-disconnected" title="{{name}}" mod-role="input-audio-port" mod-port-symbol="{{symbol}}">
+            <div class="mod-pedal-input-image"></div>
+        </div>
+        {{/effect.ports.audio.input}}
+    </div>
+    <div class="mod-pedal-output">
+        {{#effect.ports.audio.output}}
+        <div class="mod-output mod-output-disconnected" title="{{name}}" mod-role="output-audio-port" mod-port-symbol="{{symbol}}">
+            <div class="mod-pedal-output-image"></div>
+        </div>
+        {{/effect.ports.audio.output}}
+    </div>
+</div>
