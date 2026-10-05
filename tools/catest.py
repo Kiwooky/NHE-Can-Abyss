@@ -249,7 +249,7 @@ t = np.arange(int(8 * sr)) / sr
 x = 0.2 * np.sin(2 * np.pi * 196 * t) * (t < 0.4)
 _, w = run(x, sr, repeat=10, reverb=8, tone=8, safety=0)
 loud = db(np.abs(w[4 * sr:]).max())
-check('runaway without Safety goes past -6 dBFS', loud > -3, '%.1f dBFS' % loud)
+check('runaway without Safety goes past -6 dBFS', loud > -6, '%.1f dBFS' % loud)
 for c in (-6, -12, -24):
     m, w = run(x, sr, repeat=10, reverb=8, tone=8, ceiling=c)
     pk, rm = db(np.abs(w[4 * sr:]).max()), db(rms(w[4 * sr:]))
@@ -280,14 +280,21 @@ for kw in (dict(repeat=7, reverb=7), dict(repeat=10, reverb=10, sag=10, wear=10)
 check('no ticks across runaway settings (Safety off)', worst == 0, '%d tick(s)' % worst)
 check('outputs never reach 0 dBFS (soft knee)', hot < 0.0, 'hottest %.1f dBFS' % hot)
 
-# 17. One runaway path: Reverb alone or with Repeat below the wild zone never runs away
-t = np.arange(int(10 * sr)) / sr
-x = 0.2 * np.sin(2 * np.pi * 196 * t) * np.minimum(1, t / 0.01) * (t < 0.4)
-_, w = run(x, sr, repeat=8.5, reverb=10, safety=0, wear=0, wobble=0)
-late, early = rms(w[8 * sr:]), rms(w[int(0.5 * sr):int(1.5 * sr)])
-check('Repeat 8.5 + Reverb 10 dies away (long tail, no runaway)', late < early * 0.3, '%.1f dB over 7 s' % db(late / early))
-_, w = run(x, sr, repeat=10, reverb=0, safety=0, wear=0, wobble=0)
-check('Repeat 10 alone runs away', rms(w[8 * sr:]) > 0.05, '%.1f dBFS rms' % db(rms(w[8 * sr:])))
+# 17. Where it runs away: Repeat alone from about 8.5; below that a high Reverb
+#     tips it over (Repeat 7 + Reverb 9); Repeat 6 and below never runs away
+t = np.arange(int(12 * sr)) / sr
+a0 = np.arange(int(0.6 * sr))
+x = np.zeros_like(t)
+x[int(0.2 * sr):int(0.2 * sr) + len(a0)] = 0.1 * np.exp(-a0 / (0.15 * sr)) * np.minimum(1, a0 / (0.002 * sr)) * np.sin(2 * np.pi * 196 * a0 / sr)
+def late(**kw):
+    _, w = run(x, sr, safety=0, **kw)
+    return db(rms(w[10 * sr:]))
+for kw, want in ((dict(repeat=6, reverb=10), False), (dict(repeat=7, reverb=5), False), (dict(repeat=8, reverb=0), False),
+                 (dict(repeat=7, reverb=10), True), (dict(repeat=8, reverb=7), True), (dict(repeat=8.5, reverb=0), True),
+                 (dict(repeat=10, reverb=0), True)):
+    l = late(**kw)
+    check('Repeat %g + Reverb %g %s' % (kw['repeat'], kw['reverb'], 'runs away' if want else 'dies away'),
+          (l > -25) == want, '%.1f dBFS late rms' % l)
 
 print('\n%d failure(s)' % fails)
 sys.exit(1 if fails else 0)

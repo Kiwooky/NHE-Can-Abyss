@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.4 — 2026-10-05
+
+After the 1.0.3 test: it would not oscillate any more. The runaway edge had moved to Repeat 9.3, a sliver of the knob, and Reverb could no longer push it over.
+
+- **Repeat** reaches unity at 8; from about 8.5 it runs away on its own, overdriving harder up to 10 (loop gain 1.4).
+- **Reverb can tip it over again, near the edge.** It still backs off as Repeat rises, but keeps a fifth of its strength. Measured edge: Repeat 7 + Reverb 9 to 10, Repeat 7.5 + Reverb 8, Repeat 8 + Reverb 7. Repeat 6 and below never runs away.
+- Tests now check that edge on both sides.
+
 ## 1.0.3 — 2026-10-05
 
 After the 1.0.2 test (digital ticks; Repeat and Reverb felt like the same knob).

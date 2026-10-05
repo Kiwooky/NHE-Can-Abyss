@@ -36,7 +36,7 @@ No schematic or recording of a real unit has been used yet. All mappings below a
 
 ## Signal flow
 
-Two loops make the sound: Repeat feeds the read wiper back to the write wiper (echoes), and Reverb keeps leftover charge circling the disc, spreading wider each turn (wash). Only Repeat can run away.
+Two loops make the sound: Repeat feeds the read wiper back to the write wiper (echoes), and Reverb keeps leftover charge circling the disc, spreading wider each turn (wash). Repeat runs away on its own from about 8.5; near that edge, Reverb can tip it over.
 
 ```mermaid
 flowchart LR
@@ -83,7 +83,7 @@ Mono in, two outs, 14 controls in enum order. Hand-written TTL must match this t
 | 15 | `tails` | Tails | toggle | 1 | Bypass keeps repeats |
 | 16 | `lv2_enabled` | Enabled | bypass | 1 | `lv2:enabled` designation, last |
 
-Defaults for Repeat, Reverb, Tone and Mix are placeholders until tuned by ear. Version `d_version(1,0,3)` = minorVersion 2, microVersion 3.
+Defaults for Repeat, Reverb, Tone and Mix are placeholders until tuned by ear. Version `d_version(1,0,4)` = minorVersion 2, microVersion 4.
 
 ## Mappings (all guesses)
 
@@ -97,8 +97,8 @@ Starting values to tune by ear; none are measured from a real unit. Knobs are 0�
 | Disc Size factor | S = 2^((knob − 5)/2.5) below 5, 2^((knob − 5)/5) above; range 0.25–2 | 5 = stock; 0 = quarter size |
 | Bandwidth | fc = 3.5 kHz × √(S × 350 ms / T), clamped 0.8–5.5 kHz; plus a 6 kHz one-pole in the Repeat path | Slow or small disc = darker; caps stop short-time runaways ticking |
 | Reverb | residual r = 0.85x per revolution, a one-pole loss (1.5 × fc) and two allpass diffusers (3.1 + 7.3 ms, g 0.6) per pass; tap moved 10.4 ms earlier so the wash centres on the revolution | Measured: passes 0.6 / 8.4 / 16.2 ms wide |
-| One runaway path | r_eff = min(r, 0.92 × (1 − g)), plus 0.25 r once g passes 1 | Only Repeat can tip it over |
-| Repeat | g = 1.1 × x^1.2 up to 9, then linear to 1.4 at 10 (the wild zone) | Unity at about 9.2; runaway peaks about −2 dBFS |
+| Runaway edge | r_eff = min(r, 0.80 × (1 − g) + 0.20 r): Reverb backs off as Repeat rises but keeps a fifth of its strength | Measured: Repeat alone from 8.5; Repeat 7 + Reverb 9, 7.5 + 8, 8 + 7; Repeat ≤ 6 never |
+| Repeat | g = (x / 0.8)^1.2 up to 8, then linear to 1.4 at 10 | Unity at 8; runaway peaks about −3 dBFS |
 | Tone | tilt around 1.2 kHz: highs −24 dB / lows +3 dB (0) … flat (5) … highs +9 dB / lows −6 dB (10) | Out of the loop |
 | Wobble depth | W = knob/5 up to 5, then 1 + 3 × ((knob − 5)/5)^1.5 (4 at 10) | Measured: 3.7× stock at 10 |
 | Wobble, per rev | ±0.045% of the revolution × W ÷ S, once per rev | Locked to disc speed |
@@ -155,10 +155,11 @@ The standard rig (native, arm32, arm64; TTL vs DPF generator; lv2info; lv2host; 
 - [x] Warble: 3–6 cents RMS stock, independent of Time; Wobble 10 and the quarter-size disc each 3–4.5×; big disc steadier; Wear 3 a light touch, Wear 10 more than 5×
 - [x] Safety: a runaway that peaks at −2.4 dBFS without it is held at the Ceiling (−6, −12, −24) and keeps oscillating
 - [x] No ticks: plucks through seven hard settings, Safety off; outputs never reach 0 dBFS
-- [x] One runaway path: Repeat 8.5 + Reverb 10 decays; Repeat 10 alone runs away
+- [x] Runaway edge: Repeat 6 + Reverb 10, 7 + 5 and 8 alone die away; Repeat 7 + Reverb 10, 8 + 7, 8.5 alone and 10 alone run away
 - [x] CPU benchmark against Taj Mahal and MultiPlay
 - [x] First hardware test (1.0.0): noise cut, ranges widened
-- [ ] 1.0.3 on the Duo, including the CPU meter
+- [x] 1.0.3 on the Duo: would not oscillate (edge too narrow), fixed in 1.0.4
+- [ ] 1.0.4 on the Duo, including the CPU meter
 
 ## Face notes
 

@@ -17,7 +17,7 @@
     ] ;
     rdfs:comment "Electrostatic oil can delay modelled on 1960s Tel-Ray / Morley units. Leftover charge circles the disc every revolution (Reverb), the motor sets the time so sweeps bend pitch, and the warble follows disc speed. Modern mods: Disc Size, Wear, Sag and Hold." ;
     lv2:minorVersion 2 ;
-    lv2:microVersion 3 ;
+    lv2:microVersion 4 ;
     lv2:optionalFeature lv2:hardRTCapable ;
     lv2:requiredFeature <http://lv2plug.in/ns/ext/options#options> ,
                         <http://lv2plug.in/ns/ext/urid#map> ;

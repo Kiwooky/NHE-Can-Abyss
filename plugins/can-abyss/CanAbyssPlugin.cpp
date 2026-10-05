@@ -44,6 +44,7 @@ static const float    kWobFlut  = 0.00004f;      // motor flutter, 3-10 Hz
 static const float    kWearPitch = 0.0012f;      // worn disc at Wear 10: speed irregularity
 static const float    kWearDip   = 0.5f;         // ... and up to -6 dB level dips
 static const float    kApG      = 0.6f;
+static const float    kResKeep  = 0.20f;         // share of Reverb that survives the back-off
 static const uint32_t kApSize   = 1024;          // residual diffusers (<= 10 ms at 96 kHz)
 static const uint32_t kLaSize   = 256;           // limiter lookahead (<= 2.6 ms at 96 kHz)
 
@@ -163,7 +164,7 @@ protected:
     const char* getMaker()       const override { return "New Horizon Electronics"; }
     const char* getHomePage()    const override { return "https://github.com/Kiwooky/NHE-Can-Abyss"; }
     const char* getLicense()     const override { return "MIT"; }
-    uint32_t    getVersion()     const override { return d_version(1, 0, 3); }
+    uint32_t    getVersion()     const override { return d_version(1, 0, 4); }
     int64_t     getUniqueId()    const override { return d_cconst('C', 'A', 'B', 'Y'); }
 
     void initParameter(uint32_t index, Parameter& p) override
@@ -295,16 +296,15 @@ protected:
         // --- controls ------------------------------------------------------
         const float timeMs  = clampf(fParams[kTime], 40.0f, 2000.0f);
         const float xRep    = clampf(fParams[kRepeat] / 10.0f, 0.0f, 1.0f);
-        // Repeat: as before up to 9 (unity at about 9.2); the last notch is the
-        // wild zone, climbing to 1.4 so a runaway overdrives hard
-        const float gRepeat = xRep <= 0.9f ? 1.1f * std::pow(xRep, 1.2f)
-                                           : 0.96936f + (xRep - 0.9f) * 4.3064f;   // continuous at 9, 1.4 at 10
+        // Repeat: unity at 8, so 8-10 is the wild zone (loop gain up to 1.4 at
+        // 10, hard overdriven runaway); below 8 it is an echo knob as before
+        const float gRepeat = xRep <= 0.8f ? std::pow(xRep / 0.8f, 1.2f)
+                                           : 1.0f + (xRep - 0.8f) * 2.0f;
         const float resid   = 0.85f * clampf(fParams[kReverb] / 10.0f, 0.0f, 1.0f);
-        // One runaway path: the two loops add, so Reverb backs off as Repeat
-        // nears unity (only Repeat can tip it over), then adds some density
-        // back once Repeat has run away.
-        const float residEff = std::fmin(resid, std::fmax(0.92f * (1.0f - gRepeat), 0.0f))
-                             + 0.25f * resid * clampf((gRepeat - 1.0f) * 10.0f, 0.0f, 1.0f);
+        // The two loops add, so Reverb backs off as Repeat nears unity, but
+        // keeps a share of its strength: near the edge, a high Reverb can tip
+        // it over; far from the edge it can't.
+        const float residEff = std::fmin(resid, std::fmax(0.80f * (1.0f - gRepeat), 0.0f) + kResKeep * resid);
 
         // Tone: tilt around 1.2 kHz. Dull end: highs -24 dB, lows +3 dB.
         // Bright end: highs +9 dB, lows -6 dB.

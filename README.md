@@ -23,8 +23,8 @@ There's no tape and no erase head. A spinning disc in a can of oil holds the sig
 | Control | What it does |
 | --- | --- |
 | Time | Motor speed: 40 ms to 2 s (747 ms marks the Morley's ceiling). Sweeps bend pitch |
-| Repeat | Echoes: the read wiper is fed back to the write wiper through the tubes. Up to 9 behaves as usual; 9 to 10 is the wild zone, where it runs away and overdrives |
-| Reverb | Wash: charge the disc keeps each revolution, spreading wider every turn. It backs off as Repeat nears the edge, so only Repeat can run away |
+| Repeat | Echoes: the read wiper is fed back to the write wiper through the tubes. From about 8.5 it runs away on its own and overdrives harder towards 10 |
+| Reverb | Wash: charge the disc keeps each revolution, spreading wider every turn. Near the edge it can tip Repeat over (Repeat 7 + Reverb 9, Repeat 8 + Reverb 7); with Repeat at 6 or below it never runs away |
 | Tone | Tilt EQ on the echoes: properly dull at 0, bright at 10 |
 | Wobble | Motor, belt and runout warble; 5 = stock, 10 = about 4x |
 | Disc Size | 5 = stock. Bigger (to 2x) = brighter, steadier, heavier. Smaller (to a quarter) = darker, warblier, twitchier |
