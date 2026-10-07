@@ -1,11 +1,15 @@
 # Can-Abyss Delay
 
-**Stare into the Can-Abyss, and it echoes back.**
+**For fans of the (CBD)oil**
 
-Can-Abyss Delay by New Horizon Electronics recreates the 1960s electrostatic "oil can" delay (Ray Lubow's Tel-Ray, sold as Ad-N-Echo and Morley) for MOD Duo, Duo X and Dwarf. Faithful first, then modern mods.
+The Can-Abyss Delay by New Horizon Electronics is a modern interpretation of the 1960s electrostatic "oil can" delays (Ray Lubow's Tel-Ray, sold as Ad-N-Echo and Morley) for MOD Duo, Duo X and Dwarf.
+Faithful research and physics, with modern mods and enhancements.
 
 ![Can-Abyss Delay pedal face](bundle/nhe-can-abyss.lv2/modgui/screenshot-can-abyss.png)
 
+## Built for the dark hours
+
+This isn't a slapback for the morning commute. It's a can of slow-dripping echoes for late nights, sound design and jams that brood more than they resolve. Even the knobs sink. They start at eleven o'clock, drop through six and climb back out at one. Tone hangs straight down when it's flat. Drag up to turn up.
 
 ## Why it sounds like nothing else
 
