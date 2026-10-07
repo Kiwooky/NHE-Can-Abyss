@@ -1,8 +1,7 @@
 # Artwork licence
 
 The pedal-face artwork (everything in `bundle/nhe-can-abyss.lv2/modgui/*.png`,
-`*.jpg` and `assets/source/`, including the knob and switch art shared with
-New Horizon's MultiPlay 20/20) is © 2026 New Horizon Electronics.
+`*.jpg` and `assets/source/`) is © 2026 New Horizon Electronics.
 All rights reserved.
 
 It may be distributed unmodified as part of this plugin, including in the

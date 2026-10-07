@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.0.6 — 2026-10-07
+
+- New panel artwork (logo position).
+- Sliders travel further: at zero the caps sit just above the DISC SIZE / MIX AMT labels (204 px of travel, about 1:1 with mod-ui's 200 px drag).
+- The can scales from its centre (140 px tall at Disc Size 0, 280 px at 10).
+
+## 1.0.5 — 2026-10-07
+
+The real face (artwork by Niels).
+
+- **Upside-down knobs:** a 128-frame strip sweeping from about 11 o'clock down through 6 to about 1 o'clock. Tone points straight down at centre.
+- **Tone centre detent:** 4.6 to 5.4 is exactly flat, so "near the middle" sounds dead centre.
+- **Disc Size and Mix sliders** in the right-hand column. The can grows from 140 to 280 px as Disc Size rises, with the Disc Size cap riding on its lid. Each half of the column is its own drag zone; drag up anywhere to raise the value.
+- **Live readouts** for Time and Ceiling ("350MS", "-6DB"), filled by mod-ui itself. Click one to type an exact value.
+- **Tails** button on the face; the Safety, Tails, Hold and Effect LEDs follow their switches.
+- Face is 336 KB. Positions were fitted pixel by pixel to the mockup.
+- New tools: `tools/preview_face.py` (try the face in a browser without a MOD) and `tools/ttlcmp.py`. The placeholder face tools are gone.
+
 ## 1.0.4 — 2026-10-05
 
 After the 1.0.3 test: it would not oscillate any more. The runaway edge had moved to Repeat 9.3, a sliver of the knob, and Reverb could no longer push it over.

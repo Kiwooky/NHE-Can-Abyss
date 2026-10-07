@@ -1,5 +1,5 @@
-/* Can-Abyss Delay - New Horizon Electronics (650 x 400). PLACEHOLDER face:
-   borrowed MultiPlay knob and switch art until the Can-Abyss artwork lands. */
+/* Can-Abyss Delay - New Horizon Electronics (650 x 400). Artwork by Niels.
+   Positions fitted pixel-by-pixel to the v2 mockup. */
 .canabyss{{{cns}}} {
     position: absolute;
     width: 650px;
@@ -9,63 +9,105 @@
     background-repeat: no-repeat;
     border-radius: 4px;
 }
-/* main knobs: 62x62 frames, 65 frames */
+
+/* knobs: 58x58 frames, 128 frames in one horizontal strip */
 .canabyss{{{cns}}} .ca-knob {
     position: absolute;
-    width: 62px;
-    height: 62px;
+    width: 58px;
+    height: 58px;
     background-image: url(/resources/knob.png{{{ns}}});
     background-repeat: no-repeat;
     background-position: 0 0;
     cursor: pointer;
     z-index: 21;
 }
-.canabyss{{{cns}}} .ca-time      { left: 30px;  top: 66px; }
-.canabyss{{{cns}}} .ca-repeat    { left: 115px; top: 66px; }
-.canabyss{{{cns}}} .ca-reverb    { left: 200px; top: 66px; }
-.canabyss{{{cns}}} .ca-tone      { left: 285px; top: 66px; }
-.canabyss{{{cns}}} .ca-wobble    { left: 30px;  top: 162px; }
-.canabyss{{{cns}}} .ca-disc_size { left: 115px; top: 162px; }
-.canabyss{{{cns}}} .ca-mix       { left: 370px; top: 66px; }
-.canabyss{{{cns}}} .ca-wear      { left: 200px; top: 162px; }
-.canabyss{{{cns}}} .ca-sag       { left: 285px; top: 162px; }
-.canabyss{{{cns}}} .ca-ceiling   { left: 370px; top: 162px; }
+.canabyss{{{cns}}} .ca-wobble  { left: 287px; top: 49px; }
+.canabyss{{{cns}}} .ca-wear    { left: 365px; top: 49px; }
+.canabyss{{{cns}}} .ca-sag     { left: 443px; top: 49px; }
+.canabyss{{{cns}}} .ca-time    { left: 35px;  top: 160px; }
+.canabyss{{{cns}}} .ca-repeat  { left: 113px; top: 160px; }
+.canabyss{{{cns}}} .ca-reverb  { left: 191px; top: 160px; }
+.canabyss{{{cns}}} .ca-tone    { left: 287px; top: 161px; }
+.canabyss{{{cns}}} .ca-ceiling { left: 443px; top: 160px; }
 
-/* toggles: 100x62 frames [LED off | LED on]; switch widget, class "on" = value max */
-.canabyss{{{cns}}} .ca-toggle {
+/* readouts */
+.canabyss{{{cns}}} .ca-readout {
     position: absolute;
-    width: 100px;
-    height: 62px;
-    background-image: url(/resources/timemod.png{{{ns}}});
+    width: 64px;
+    height: 20px;
+    line-height: 20px;
+    color: #f1b105;
+    font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-align: center;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    cursor: text;
+    z-index: 22;
+}
+.canabyss{{{cns}}} .ca-time-value    { left: 36px;  top: 249px; }
+.canabyss{{{cns}}} .ca-ceiling-value { left: 444px; top: 249px; }
+
+/* switches: [off | on] strips, button and LED together */
+.canabyss{{{cns}}} .ca-switch {
+    position: absolute;
     background-repeat: no-repeat;
     background-position: 0 0;
     cursor: pointer;
     z-index: 21;
 }
-.canabyss{{{cns}}} .ca-safety     { left: 503px; top: 70px; }
-.canabyss{{{cns}}} .ca-tails      { left: 503px; top: 154px; }
-.canabyss{{{cns}}} .ca-toggle.off { background-position: 0 0; }
-.canabyss{{{cns}}} .ca-toggle.on  { background-position: -100px 0; }
-
-/* footswitches: 168x139 frames [LED off | LED on] */
-.canabyss{{{cns}}} .ca-fs {
-    position: absolute;
-    top: 262px;
-    width: 168px;
-    height: 139px;
-    background-image: url(/resources/footswitch.png{{{ns}}});
-    background-repeat: no-repeat;
-    background-position: 0 0;
-    cursor: pointer;
-    z-index: 21;
-}
-.canabyss{{{cns}}} .ca-hold { left: 30px; }
-.canabyss{{{cns}}} .ca-hold.off { background-position: 0 0; }
-.canabyss{{{cns}}} .ca-hold.on  { background-position: -168px 0; }
-.canabyss{{{cns}}} .ca-effect { left: 230px; }
-/* bypass widget: class "on" = bypassed -> LED off; "off" = active -> LED lit */
+.canabyss{{{cns}}} .ca-safety { left: 384px; top: 165px; width: 48px;  height: 111px; background-image: url(/resources/safety.png{{{ns}}}); }
+.canabyss{{{cns}}} .ca-tails  { left: 118px; top: 235px; width: 148px; height: 48px;  background-image: url(/resources/tails.png{{{ns}}}); }
+.canabyss{{{cns}}} .ca-hold   { left: 24px;  top: 292px; width: 135px; height: 90px;  background-image: url(/resources/hold.png{{{ns}}}); }
+.canabyss{{{cns}}} .ca-effect { left: 392px; top: 293px; width: 130px; height: 90px;  background-image: url(/resources/effect.png{{{ns}}}); }
+.canabyss{{{cns}}} .ca-safety.on { background-position: -48px 0; }
+.canabyss{{{cns}}} .ca-tails.on  { background-position: -148px 0; }
+.canabyss{{{cns}}} .ca-hold.on   { background-position: -135px 0; }
+/* bypass widget: "on" = bypassed (LED off), "off" = active (LED lit) */
 .canabyss{{{cns}}} .ca-effect.on  { background-position: 0 0; }
-.canabyss{{{cns}}} .ca-effect.off { background-position: -168px 0; }
+.canabyss{{{cns}}} .ca-effect.off { background-position: -130px 0; }
+
+/* the column: the can (scales from its centre) and the two caps */
+.canabyss{{{cns}}} .ca-can {
+    position: absolute;
+    left: 537px;
+    top: 56px;
+    width: 87px;
+    height: 280px;
+    background-image: url(/resources/can.jpg{{{ns}}});
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    z-index: 19;
+}
+.canabyss{{{cns}}} .ca-cap {
+    position: absolute;
+    top: 44px;
+    width: 44px;
+    height: 93px;
+    background-repeat: no-repeat;
+    z-index: 20;
+    pointer-events: none;
+}
+.canabyss{{{cns}}} .ca-cap-disc { left: 536px; background-image: url(/resources/cap-disc.png{{{ns}}}); }
+.canabyss{{{cns}}} .ca-cap-mix  { left: 580px; background-image: url(/resources/cap-mix.png{{{ns}}}); }
+
+/* invisible drag zones: film widget with a transparent 201-frame strip, so
+   mod-ui drags 1 px per step (200 px for the full range) */
+.canabyss{{{cns}}} .ca-drag {
+    position: absolute;
+    top: 24px;
+    width: 44px;
+    height: 321px;
+    background-image: url(/resources/drag.png{{{ns}}});
+    background-repeat: no-repeat;
+    cursor: ns-resize;
+    z-index: 23;
+}
+.canabyss{{{cns}}} .ca-drag-disc { left: 536px; }
+.canabyss{{{cns}}} .ca-drag-mix  { left: 580px; }
 
 .canabyss{{{cns}}} .mod-pedal-input,
 .canabyss{{{cns}}} .mod-pedal-output { top: 150px; }

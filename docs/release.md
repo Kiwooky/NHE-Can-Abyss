@@ -13,7 +13,7 @@ As of October 2026, MOD publishes community plugins in three steps.
 | Own identity (URI, maker, bundle name) | Done in 1.0.0 |
 | Ports final | Changed in 1.0.1 after the first test; freeze before going public |
 | mod-plugin-builder package | Written; first builder.mod.audio build pending |
-| Pedal face | **Placeholder** (borrowed MultiPlay art); real artwork to come |
+| Pedal face | Real artwork in 1.0.5; to check in mod-ui on the Duo |
 | Manual PDF + `modgui:documentation` line | To do |
 | Factory presets | To do |
 | Tested on Duo | 1.0.0 played; 1.0.3 to check (incl. CPU meter) |

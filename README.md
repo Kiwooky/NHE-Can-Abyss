@@ -4,9 +4,8 @@
 
 Can-Abyss Delay by New Horizon Electronics recreates the 1960s electrostatic "oil can" delay (Ray Lubow's Tel-Ray, sold as Ad-N-Echo and Morley) for MOD Duo, Duo X and Dwarf. Faithful first, then modern mods.
 
-![Can-Abyss Delay pedal face (placeholder)](bundle/nhe-can-abyss.lv2/modgui/screenshot-can-abyss.png)
+![Can-Abyss Delay pedal face](bundle/nhe-can-abyss.lv2/modgui/screenshot-can-abyss.png)
 
-> The face is a **placeholder** until the real artwork lands.
 
 ## Why it sounds like nothing else
 
@@ -22,14 +21,14 @@ There's no tape and no erase head. A spinning disc in a can of oil holds the sig
 
 | Control | What it does |
 | --- | --- |
-| Time | Motor speed: 40 ms to 2 s (747 ms marks the Morley's ceiling). Sweeps bend pitch |
+| Time | Motor speed: 40 ms to 2 s (747 ms marks the Morley's ceiling). Sweeps bend pitch. The readout shows the value; click it to type one |
 | Repeat | Echoes: the read wiper is fed back to the write wiper through the tubes. From about 8.5 it runs away on its own and overdrives harder towards 10 |
 | Reverb | Wash: charge the disc keeps each revolution, spreading wider every turn. Near the edge it can tip Repeat over (Repeat 7 + Reverb 9, Repeat 8 + Reverb 7); with Repeat at 6 or below it never runs away |
-| Tone | Tilt EQ on the echoes: properly dull at 0, bright at 10 |
+| Tone | Tilt EQ on the echoes: points down at centre (flat, with a small dead zone), duller to the left, brighter to the right |
 | Wobble | Motor, belt and runout warble; 5 = stock, 10 = about 4x |
-| Disc Size | 5 = stock. Bigger (to 2x) = brighter, steadier, heavier. Smaller (to a quarter) = darker, warblier, twitchier |
+| Disc Size | The left-hand slider: drag up and the can grows. 5 = stock. Bigger (to 2x) = brighter, steadier, heavier. Smaller (to a quarter) = darker, warblier, twitchier |
 | Wear | A worn disc: speed and level wobbles tied to disc position, so they repeat every revolution and build in the tails. 0 = new, 3 = stock, 10 = beaten up |
-| Mix | Dry/wet on Mix Out |
+| Mix | Dry/wet on Mix Out (the right-hand slider) |
 | Sag | Tube supply droop on hard hits, plus a motor slip that dips the pitch (up to about a semitone) |
 | Ceiling | The loudest the echoes can get at the outputs, −24 to 0 dBFS (with Safety on). Either way, the outputs never hard-clip |
 | Hold | Freezes the disc (latching); Time still varispeeds the loop |

@@ -13,7 +13,7 @@
 #
 ######################################
 
-NHE_CAN_ABYSS_VERSION = f1653cb5fb733c93192f95f96783fa3b46394594
+NHE_CAN_ABYSS_VERSION = COMMIT_HASH_HERE
 NHE_CAN_ABYSS_SITE = $(call github,Kiwooky,NHE-Can-Abyss,$(NHE_CAN_ABYSS_VERSION))
 NHE_CAN_ABYSS_BUNDLES = nhe-can-abyss.lv2
 

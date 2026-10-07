@@ -1,19 +1,34 @@
 <div class="mod-pedal canabyss{{{cns}}}">
     <div mod-role="drag-handle" class="mod-drag-handle"></div>
-    <div class="ca-knob ca-time" title="Time" mod-role="input-control-port" mod-port-symbol="time"></div>
-    <div class="ca-knob ca-repeat" title="Repeat" mod-role="input-control-port" mod-port-symbol="repeat"></div>
-    <div class="ca-knob ca-reverb" title="Reverb" mod-role="input-control-port" mod-port-symbol="reverb"></div>
-    <div class="ca-knob ca-tone" title="Tone" mod-role="input-control-port" mod-port-symbol="tone"></div>
-    <div class="ca-knob ca-wobble" title="Wobble" mod-role="input-control-port" mod-port-symbol="wobble"></div>
-    <div class="ca-knob ca-disc_size" title="Disc Size" mod-role="input-control-port" mod-port-symbol="disc_size"></div>
-    <div class="ca-knob ca-wear" title="Wear" mod-role="input-control-port" mod-port-symbol="wear"></div>
-    <div class="ca-knob ca-mix" title="Mix" mod-role="input-control-port" mod-port-symbol="mix"></div>
-    <div class="ca-knob ca-sag" title="Sag" mod-role="input-control-port" mod-port-symbol="sag"></div>
-    <div class="ca-knob ca-ceiling" title="Ceiling (wet limit, with Safety on)" mod-role="input-control-port" mod-port-symbol="ceiling"></div>
-    <div class="ca-toggle ca-safety" title="Safety: limits the wet output to the Ceiling" mod-widget="switch" mod-role="input-control-port" mod-port-symbol="safety"></div>
-    <div class="ca-toggle ca-tails" title="Tails" mod-widget="switch" mod-role="input-control-port" mod-port-symbol="tails"></div>
-    <div class="ca-fs ca-hold" title="Hold" mod-widget="switch" mod-role="input-control-port" mod-port-symbol="hold"></div>
-    <div class="ca-fs ca-effect" title="Effect" mod-role="bypass"></div>
+
+    <!-- knobs: 128-frame strip, sweep from about 11 o'clock down through 6 to about 1 o'clock -->
+    <div class="ca-knob ca-wobble"  title="Wobble"  mod-role="input-control-port" mod-port-symbol="wobble"></div>
+    <div class="ca-knob ca-wear"    title="Wear"    mod-role="input-control-port" mod-port-symbol="wear"></div>
+    <div class="ca-knob ca-sag"     title="Sag"     mod-role="input-control-port" mod-port-symbol="sag"></div>
+    <div class="ca-knob ca-time"    title="Time"    mod-role="input-control-port" mod-port-symbol="time"></div>
+    <div class="ca-knob ca-repeat"  title="Repeat (8-10: runaway)" mod-role="input-control-port" mod-port-symbol="repeat"></div>
+    <div class="ca-knob ca-reverb"  title="Reverb"  mod-role="input-control-port" mod-port-symbol="reverb"></div>
+    <div class="ca-knob ca-tone"    title="Tone (centre = flat)" mod-role="input-control-port" mod-port-symbol="tone"></div>
+    <div class="ca-knob ca-ceiling" title="Ceiling" mod-role="input-control-port" mod-port-symbol="ceiling"></div>
+
+    <!-- live readouts (mod-ui fills these; click one to type a value) -->
+    <div class="ca-readout ca-time-value"    mod-role="input-control-value" mod-port-symbol="time"></div>
+    <div class="ca-readout ca-ceiling-value" mod-role="input-control-value" mod-port-symbol="ceiling"></div>
+
+    <!-- buttons and footswitches: one element covers the button and its LED -->
+    <div class="ca-switch ca-safety" title="Safety: limit the wet output to the Ceiling" mod-widget="switch" mod-role="input-control-port" mod-port-symbol="safety"></div>
+    <div class="ca-switch ca-tails"  title="Tails: repeats ring out in bypass" mod-widget="switch" mod-role="input-control-port" mod-port-symbol="tails"></div>
+    <div class="ca-switch ca-hold"   title="Hold: freeze the disc" mod-widget="switch" mod-role="input-control-port" mod-port-symbol="hold"></div>
+    <div class="ca-switch ca-effect" title="Effect on/off" mod-role="bypass"></div>
+
+    <!-- Disc Size and Mix sliders: the can and the caps are moved by the face script;
+         the two invisible drag zones on top are the actual controls -->
+    <div class="ca-can"></div>
+    <div class="ca-cap ca-cap-disc"></div>
+    <div class="ca-cap ca-cap-mix"></div>
+    <div class="ca-drag ca-drag-disc" title="Disc Size: drag up for a bigger can" mod-role="input-control-port" mod-port-symbol="disc_size"></div>
+    <div class="ca-drag ca-drag-mix"  title="Mix: drag up for more echo" mod-role="input-control-port" mod-port-symbol="mix"></div>
+
     <div class="mod-pedal-input">
         {{#effect.ports.audio.input}}
         <div class="mod-input mod-input-disconnected" title="{{name}}" mod-role="input-audio-port" mod-port-symbol="{{symbol}}">

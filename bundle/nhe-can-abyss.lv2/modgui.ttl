@@ -6,6 +6,7 @@
         modgui:resourcesDirectory <modgui> ;
         modgui:iconTemplate <modgui/icon-can-abyss.html> ;
         modgui:stylesheet <modgui/stylesheet-can-abyss.css> ;
+        modgui:javascript <modgui/script-can-abyss.js> ;
         modgui:screenshot <modgui/screenshot-can-abyss.png> ;
         modgui:thumbnail <modgui/thumbnail-can-abyss.png> ;
         modgui:brand "New Horizon" ;

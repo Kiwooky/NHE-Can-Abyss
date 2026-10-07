@@ -296,5 +296,15 @@ for kw, want in ((dict(repeat=6, reverb=10), False), (dict(repeat=7, reverb=5), 
     check('Repeat %g + Reverb %g %s' % (kw['repeat'], kw['reverb'], 'runs away' if want else 'dies away'),
           (l > -25) == want, '%.1f dBFS late rms' % l)
 
+# 18. Tone's centre detent: 4.6-5.4 is exactly flat (the knob points straight down)
+x = np.zeros(int(1.0 * sr)); x[4800:4800 + 1440] = 0.3 * np.random.default_rng(5).standard_normal(1440)
+_, w5 = run(x, sr, tone=5, repeat=0, reverb=0, wobble=0, **QUIET)
+_, w46 = run(x, sr, tone=4.65, repeat=0, reverb=0, wobble=0, **QUIET)
+_, w54 = run(x, sr, tone=5.35, repeat=0, reverb=0, wobble=0, **QUIET)
+_, w6 = run(x, sr, tone=6, repeat=0, reverb=0, wobble=0, **QUIET)
+check('Tone 4.65 and 5.35 identical to centre', np.array_equal(w5, w46) and np.array_equal(w5, w54))
+check('Tone 6 is brighter than centre', centroid(w6[21000:24000], sr) > centroid(w5[21000:24000], sr),
+      '%.0f vs %.0f Hz' % (centroid(w6[21000:24000], sr), centroid(w5[21000:24000], sr)))
+
 print('\n%d failure(s)' % fails)
 sys.exit(1 if fails else 0)

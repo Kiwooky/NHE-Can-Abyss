@@ -71,7 +71,7 @@ Mono in, two outs, 14 controls in enum order. Hand-written TTL must match this t
 | 3 | `time` | Time | 40–2000 ms | 350 | Logarithmic; 747 marked |
 | 4 | `repeat` | Repeat | 0–10 | 3 | Regen, read → write; can run away |
 | 5 | `reverb` | Reverb | 0–10 | 5 | Residual charge per revolution |
-| 6 | `tone` | Tone | 0–10 | 5 | Tilt EQ on wet |
+| 6 | `tone` | Tone | 0–10 | 5 | Tilt EQ on wet; 4.6–5.4 flat |
 | 7 | `wobble` | Wobble | 0–10 | 5 | 5 = stock warble |
 | 8 | `disc_size` | Disc Size | 0–10 | 5 | 5 = stock; macro |
 | 9 | `wear` | Wear | 0–10 | 3 | 0 = new disc; 3 = stock |
@@ -83,7 +83,7 @@ Mono in, two outs, 14 controls in enum order. Hand-written TTL must match this t
 | 15 | `tails` | Tails | toggle | 1 | Bypass keeps repeats |
 | 16 | `lv2_enabled` | Enabled | bypass | 1 | `lv2:enabled` designation, last |
 
-Defaults for Repeat, Reverb, Tone and Mix are placeholders until tuned by ear. Version `d_version(1,0,4)` = minorVersion 2, microVersion 4.
+Defaults for Repeat, Reverb, Tone and Mix are placeholders until tuned by ear. Version `d_version(1,0,6)` = minorVersion 2, microVersion 6.
 
 ## Mappings (all guesses)
 
@@ -99,7 +99,7 @@ Starting values to tune by ear; none are measured from a real unit. Knobs are 0�
 | Reverb | residual r = 0.85x per revolution, a one-pole loss (1.5 × fc) and two allpass diffusers (3.1 + 7.3 ms, g 0.6) per pass; tap moved 10.4 ms earlier so the wash centres on the revolution | Measured: passes 0.6 / 8.4 / 16.2 ms wide |
 | Runaway edge | r_eff = min(r, 0.80 × (1 − g) + 0.20 r): Reverb backs off as Repeat rises but keeps a fifth of its strength | Measured: Repeat alone from 8.5; Repeat 7 + Reverb 9, 7.5 + 8, 8 + 7; Repeat ≤ 6 never |
 | Repeat | g = (x / 0.8)^1.2 up to 8, then linear to 1.4 at 10 | Unity at 8; runaway peaks about −3 dBFS |
-| Tone | tilt around 1.2 kHz: highs −24 dB / lows +3 dB (0) … flat (5) … highs +9 dB / lows −6 dB (10) | Out of the loop |
+| Tone | tilt around 1.2 kHz: highs −24 dB / lows +3 dB (0) … flat (4.6–5.4, the centre detent) … highs +9 dB / lows −6 dB (10) | Out of the loop |
 | Wobble depth | W = knob/5 up to 5, then 1 + 3 × ((knob − 5)/5)^1.5 (4 at 10) | Measured: 3.7× stock at 10 |
 | Wobble, per rev | ±0.045% of the revolution × W ÷ S, once per rev | Locked to disc speed |
 | Wobble, belt + flutter | 0.37 + 0.61 Hz drift (0.12%) + 3–10 Hz flutter (0.004%), × W ÷ S × stock speed ÷ current speed | Measured: 4.5 cents RMS stock, the same at any Time |
@@ -159,17 +159,19 @@ The standard rig (native, arm32, arm64; TTL vs DPF generator; lv2info; lv2host; 
 - [x] CPU benchmark against Taj Mahal and MultiPlay
 - [x] First hardware test (1.0.0): noise cut, ranges widened
 - [x] 1.0.3 on the Duo: would not oscillate (edge too narrow), fixed in 1.0.4
-- [ ] 1.0.4 on the Duo, including the CPU meter
+- [x] Tone 4.65 and 5.35 sound identical to 5 (centre detent)
+- [x] Face: preview renders the mockup; every control driven like a user (drags, clicks, typed values) behaves as specified
+- [ ] 1.0.6 on the Duo: the face in the real mod-ui (readout formats, sliders, script), and the CPU meter
 
 ## Face notes
 
-Ten knobs, four switches. The first release ships a **placeholder face** (borrowed MultiPlay knob and switch art); the real artwork replaces it.
+The real face (1.0.5), 650×400, artwork by Niels; positions fitted pixel by pixel to his v2 mockup.
 
-- **Knobs:** Time, Repeat, Reverb, Tone, Mix; Wobble, Disc Size, Wear, Sag, Ceiling.
-- **Switches:** Hold, Safety, Tails, Bypass (LED lit when active).
-- **Time scale:** 747 marked as the faithful line; past it is the "slow motor" zone.
-- **Jacks:** label Mix Out and Wet Out so they aren't mistaken for stereo.
-- **Assets from Niels:** background with black placeholder holes, knob body and marker layers, button on/off states.
+- **Knobs (8):** one 128-frame strip, sweeping from about 11 o'clock down through 6 to about 1 o'clock. Tone sits straight down at centre, with a 4.6–5.4 flat zone in the DSP.
+- **Readouts:** Time and Ceiling, mod-ui's `input-control-value` role with custom unit formats (`%.0fms`, `%.0fdB`), upper-cased in CSS. Clicking one lets you type a value.
+- **Switches:** Safety, Tails, Hold and Effect. Each is one element covering the button and its LED, with an [off | on] strip, so the LED needs no script.
+- **Sliders:** Disc Size (left) and Mix (right) are invisible 201-frame drag zones (200 px of drag for the full range). The face script moves the caps (y 248 at zero, just above the labels, to y 44 at max: 204 px, about 1:1 with mod-ui's 200 px drag) and scales the can from its centre (y 196): 140 px tall at 0, 280 px at 10.
+- **Weight:** 336 KB (panel JPEG untouched, 256-colour knob strip and screenshot).
 
 ## Parked and open
 
@@ -179,4 +181,3 @@ Ten knobs, four switches. The first release ships a **placeholder face** (borrow
 
 - [ ] Is there a schematic or recording of a real Tel-Ray or Morley to tune against?
 - [ ] Were the original motors induction types that would actually slip under sag?
-- [ ] Face artwork

@@ -164,7 +164,7 @@ protected:
     const char* getMaker()       const override { return "New Horizon Electronics"; }
     const char* getHomePage()    const override { return "https://github.com/Kiwooky/NHE-Can-Abyss"; }
     const char* getLicense()     const override { return "MIT"; }
-    uint32_t    getVersion()     const override { return d_version(1, 0, 4); }
+    uint32_t    getVersion()     const override { return d_version(1, 0, 6); }
     int64_t     getUniqueId()    const override { return d_cconst('C', 'A', 'B', 'Y'); }
 
     void initParameter(uint32_t index, Parameter& p) override
@@ -308,7 +308,9 @@ protected:
 
         // Tone: tilt around 1.2 kHz. Dull end: highs -24 dB, lows +3 dB.
         // Bright end: highs +9 dB, lows -6 dB.
-        const float tn = (clampf(fParams[kTone], 0.0f, 10.0f) - 5.0f) / 5.0f;   // -1 .. 1
+        // centre detent: 4.6-5.4 is exactly flat, so "near the middle" sounds dead centre
+        const float td = clampf(fParams[kTone], 0.0f, 10.0f) - 5.0f;
+        const float tn = std::fabs(td) < 0.4f ? 0.0f : (td - (td > 0.0f ? 0.4f : -0.4f)) / 4.6f;   // -1 .. 1
         const float hiDb = tn < 0.0f ? 24.0f * tn : 9.0f * tn;
         const float loDb = tn < 0.0f ? -3.0f * tn : -6.0f * tn;
         const float toneHi = std::pow(10.0f, hiDb / 20.0f);
