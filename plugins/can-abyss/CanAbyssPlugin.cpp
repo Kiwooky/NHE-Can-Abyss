@@ -164,7 +164,7 @@ protected:
     const char* getMaker()       const override { return "New Horizon Electronics"; }
     const char* getHomePage()    const override { return "https://github.com/Kiwooky/NHE-Can-Abyss"; }
     const char* getLicense()     const override { return "MIT"; }
-    uint32_t    getVersion()     const override { return d_version(1, 0, 6); }
+    uint32_t    getVersion()     const override { return d_version(1, 0, 8); }
     int64_t     getUniqueId()    const override { return d_cconst('C', 'A', 'B', 'Y'); }
 
     void initParameter(uint32_t index, Parameter& p) override

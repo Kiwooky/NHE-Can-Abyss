@@ -83,7 +83,7 @@ Mono in, two outs, 14 controls in enum order. Hand-written TTL must match this t
 | 15 | `tails` | Tails | toggle | 1 | Bypass keeps repeats |
 | 16 | `lv2_enabled` | Enabled | bypass | 1 | `lv2:enabled` designation, last |
 
-Defaults for Repeat, Reverb, Tone and Mix are placeholders until tuned by ear. Version `d_version(1,0,6)` = minorVersion 2, microVersion 6.
+Defaults for Repeat, Reverb, Tone and Mix are placeholders until tuned by ear. Version `d_version(1,0,8)` = minorVersion 2, microVersion 8.
 
 ## Mappings (all guesses)
 
@@ -161,17 +161,19 @@ The standard rig (native, arm32, arm64; TTL vs DPF generator; lv2info; lv2host; 
 - [x] 1.0.3 on the Duo: would not oscillate (edge too narrow), fixed in 1.0.4
 - [x] Tone 4.65 and 5.35 sound identical to 5 (centre detent)
 - [x] Face: preview renders the mockup; every control driven like a user (drags, clicks, typed values) behaves as specified
-- [ ] 1.0.6 on the Duo: the face in the real mod-ui (readout formats, sliders, script), and the CPU meter
+- [x] 1.0.6 on the Duo: readouts would not accept typing; fixed in 1.0.7
+- [ ] 1.0.8 on the Duo: the face in the real mod-ui (readout formats, sliders, script), and the CPU meter
 
 ## Face notes
 
 The real face (1.0.5), 650×400, artwork by Niels; positions fitted pixel by pixel to his v2 mockup.
 
 - **Knobs (8):** one 128-frame strip, sweeping from about 11 o'clock down through 6 to about 1 o'clock. Tone sits straight down at centre, with a 4.6–5.4 flat zone in the DSP.
-- **Readouts:** Time and Ceiling, mod-ui's `input-control-value` role with custom unit formats (`%.0fms`, `%.0fdB`), upper-cased in CSS. Clicking one lets you type a value.
+- **Readouts:** Time and Ceiling, drawn by the face script ("350MS", "-6DB"). Clicking one opens a real text box; Enter or a click elsewhere applies the value through `funcs.set_port_value`, Esc cancels. (mod-ui's built-in `input-control-value` editing didn't accept typing on the Duo in 1.0.6.) The TTL keeps custom unit formats for MOD's own displays.
 - **Switches:** Safety, Tails, Hold and Effect. Each is one element covering the button and its LED, with an [off | on] strip, so the LED needs no script.
 - **Sliders:** Disc Size (left) and Mix (right) are invisible 201-frame drag zones (200 px of drag for the full range). The face script moves the caps (y 248 at zero, just above the labels, to y 44 at max: 204 px, about 1:1 with mod-ui's 200 px drag) and scales the can from its centre (y 196): 140 px tall at 0, 280 px at 10.
-- **Weight:** 336 KB (panel JPEG untouched, 256-colour knob strip and screenshot).
+- **Resolution:** 2x images throughout, drawn at 1x size with `background-size`; layout in 1x CSS pixels.
+- **Weight:** about 770 KB (panel JPEG untouched, 256-colour knob strip and screenshot).
 
 ## Parked and open
 

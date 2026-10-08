@@ -14,7 +14,8 @@ html/js/modgui.js (Oct 2026):
   - mod-role="input-control-value": the unit's units:render format (a bare %f
     becomes %.2f, as in mod-ui), updated live; click to type a value
   - the face script (modgui:javascript) gets 'start' and 'change' events,
-    with jQuery like in mod-ui
+    with jQuery like in mod-ui, and funcs.set_port_value (which, as in
+    mod-ui, updates the widgets but does not echo a 'change' to the script)
 Below the face: every port's value, for checking. Not emulated: addressing,
 presets, MIDI learn, tablet gestures. Images are inlined; jQuery loads from
 cdnjs.
@@ -107,16 +108,19 @@ function render(fmt, v) {
   fmt = fmt.replace('%%f', '%%.2f');
   return fmt.replace(/%%%%/g, '\\u0001').replace(/%%\\.(\\d+)f/, (m, d) => v.toFixed(+d)).replace(/%%d/, Math.round(v)).replace(/\\u0001/g, '%%');
 }
-function emit(sym, value) {
-  if (faceScript) { try { faceScript({ type: 'change', symbol: sym, value: value, icon: root }, {}); } catch (e) { console.error('face script error', e); } }
+// as mod-ui: values set from the face script (funcs.set_port_value) update the
+// widgets but are NOT sent back to the script as 'change' events
+const FUNCS = { set_port_value: (sym, v) => { if (PORTS[sym]) setValue(sym, v, null, true); } };
+function emit(sym, value, fromJs) {
+  if (faceScript && !fromJs) { try { faceScript({ type: 'change', symbol: sym, value: value, icon: root, api_version: 3 }, FUNCS); } catch (e) { console.error('face script error', e); } }
   $('[mod-role=input-control-value][mod-port-symbol="' + sym + '"]').text(render(PORTS[sym].render, value));
   const row = document.getElementById('row-' + sym); if (row) row.textContent = (+value).toFixed(2);
 }
-function setValue(sym, v, el) {
+function setValue(sym, v, el, fromJs) {
   const p = PORTS[sym]; v = Math.min(p.max, Math.max(p.min, v));
   if (p.props.includes('integer') || p.props.includes('toggled')) v = Math.round(v);
   p.value = v; (el ? $(el) : $('[mod-port-symbol="' + sym + '"][mod-role=input-control-port]')).each(function () { draw(this, sym); });
-  emit(sym, v);
+  emit(sym, v, fromJs);
 }
 const isLog = p => p.props.includes('logarithmic') && p.min > 0 && p.max > 0;
 const scale = (p, v) => isLog(p) ? Math.log2(v) : v;
@@ -183,7 +187,7 @@ async function setupFilm(el, sym) {
     f.addEventListener('click', () => { const v = prompt(PORTS[sym].name + ' (' + PORTS[sym].min + ' to ' + PORTS[sym].max + ')', PORTS[sym].value); if (v !== null && !isNaN(parseFloat(v))) setValue(sym, parseFloat(v)); });
   });
   for (const [sym, p] of Object.entries(PORTS)) emit(sym, p.value);
-  if (faceScript) { try { faceScript({ type: 'start', ports: Object.entries(PORTS).map(([symbol, p]) => ({ symbol, value: p.value })), icon: root }, {}); } catch (e) { console.error('face script error', e); } }
+  if (faceScript) { try { faceScript({ type: 'start', ports: Object.entries(PORTS).map(([symbol, p]) => ({ symbol, value: p.value })), icon: root, api_version: 3 }, FUNCS); } catch (e) { console.error('face script error', e); } }
   document.title = 'ready';
 })();
 </script></body></html>''' % dict(name=os.path.basename(bundle), css=css, html=html, ports=json.dumps(ports),

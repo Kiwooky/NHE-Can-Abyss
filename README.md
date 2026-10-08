@@ -65,7 +65,7 @@ The design, sources and mappings are in [docs/spec.md](docs/spec.md). Testing, t
 | --- | --- |
 | `plugins/can-abyss/` | DSP source (C++, DPF) |
 | `bundle/nhe-can-abyss.lv2/` | LV2 metadata, pedal face (template, CSS, script, images) |
-| `assets/source/` | Source artwork for the face (to come) |
+| `assets/source/` | Source artwork for the face (1x and 2x originals) |
 | `mod-plugin-builder/` | Package file for MOD's builder and plugin store |
 | `tools/` | Offline LV2 test host, audio test suite, CPU benchmark, face renderer |
 | `docs/` | Spec, development process, release checklist |

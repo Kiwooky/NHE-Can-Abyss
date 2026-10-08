@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.8 — 2026-10-08
+
+- 2x knob strip: the whole face is now retina. 128 frames of 116 px, the same sweep as the 1x strip, as a 256-colour PNG (141 KB).
+
+## 1.0.7 — 2026-10-07
+
+- **Typing into the Time and Ceiling readouts works.** The readouts are now drawn by the face script; clicking one opens a real text box. Enter or clicking anywhere else applies the value, Esc cancels, and values outside the range are clamped. (1.0.6 relied on mod-ui's built-in editable readouts, which didn't accept typing on the Duo.)
+- **Retina (2x) artwork** for the panel, can, slider caps, buttons, LEDs and footswitches. The layout is unchanged.
+
 ## 1.0.6 — 2026-10-07
 
 - New panel artwork (logo position).
