@@ -13,7 +13,7 @@
 #
 ######################################
 
-NHE_CAN_ABYSS_VERSION = c56ddb59054513fcc94d3f8c16a8b13924c2acd4
+NHE_CAN_ABYSS_VERSION = 1c34ddf19c8e287b6716a83ad923cab7fff053e8
 NHE_CAN_ABYSS_SITE = https://github.com/Kiwooky/NHE-Can-Abyss.git
 NHE_CAN_ABYSS_SITE_METHOD = git
 NHE_CAN_ABYSS_GIT_SUBMODULES = y
