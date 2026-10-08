@@ -14,7 +14,12 @@
 ######################################
 
 NHE_CAN_ABYSS_VERSION = c56ddb59054513fcc94d3f8c16a8b13924c2acd4
-NHE_CAN_ABYSS_SITE = $(call github,Kiwooky,NHE-Can-Abyss,$(NHE_CAN_ABYSS_VERSION))
+NHE_CAN_ABYSS_SITE = https://github.com/Kiwooky/NHE-Can-Abyss.git
+NHE_CAN_ABYSS_SITE_METHOD = git
+NHE_CAN_ABYSS_GIT_SUBMODULES = y
+# fetch git submodules (DPF), as MOD's own packages do (mod-plugin-builder)
+NHE_CAN_ABYSS_PRE_DOWNLOAD_HOOKS += MOD_PLUGIN_BUILDER_DOWNLOAD_WITH_SUBMODULES
+
 NHE_CAN_ABYSS_BUNDLES = nhe-can-abyss.lv2
 
 NHE_CAN_ABYSS_TARGET_MAKE = $(TARGET_MAKE_ENV) $(TARGET_CONFIGURE_OPTS) $(MAKE) NOOPT=true -C $(@D)
