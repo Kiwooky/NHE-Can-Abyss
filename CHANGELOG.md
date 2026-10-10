@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.9 — 2026-10-11
+
+- **Tempo sync and tap tempo, through MOD's own settings.** Time is now tempo-aware (`mod:tempoRelatedDynamicScalePoints`). In Time's addressing dialog, tick **Tempo** and pick a note value (1/4, 1/8., 1/8T …); Time then follows the pedalboard BPM. Tap tempo works through the global BPM: assign a footswitch to BPM in tap-tempo mode. Nothing changes on the face, and the DSP is untouched: a tempo change moves the motor, so the echoes glide to the new time with the usual pitch bend.
+- **Type a tempo into the Time readout.** `120bpm` (or `120b`) sets a quarter note at 120 BPM. Add a note value for others: `120b 1/8`, `120b 1/8.` (dotted), `120b 1/8t` (triplet). `1.2s` works too. The readout still shows ms. Time's text box now opens the full keyboard so letters can be typed.
+- Restored `manifest.ttl`, `modgui.ttl` and `nhe-can-abyss.ttl`, which went missing from the bundle in the 1.0.7/1.0.8 commit (builds of that commit fail).
+
 ## 1.0.8 — 2026-10-08
 
 - 2x knob strip: the whole face is now retina. 128 frames of 116 px, the same sweep as the 1x strip, as a 256-colour PNG (141 KB).

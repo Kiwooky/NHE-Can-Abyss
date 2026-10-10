@@ -25,7 +25,7 @@ There's no tape and no erase head. A spinning disc in a can of oil holds the sig
 
 | Control | What it does |
 | --- | --- |
-| Time | Motor speed: 40 ms to 2 s (747 ms marks the Morley's ceiling). Sweeps bend pitch. The readout shows the value; click it to type one |
+| Time | Motor speed: 40 ms to 2 s (747 ms marks the Morley's ceiling). Sweeps bend pitch. The readout shows the value; click it to type one, in ms, seconds (`1.2s`) or as a tempo (`120bpm`, `120b 1/8.`). Can sync to the pedalboard tempo (see below) |
 | Repeat | Echoes: the read wiper is fed back to the write wiper through the tubes. From about 8.5 it runs away on its own and overdrives harder towards 10 |
 | Reverb | Wash: charge the disc keeps each revolution, spreading wider every turn. Near the edge it can tip Repeat over (Repeat 7 + Reverb 9, Repeat 8 + Reverb 7); with Repeat at 6 or below it never runs away |
 | Tone | Tilt EQ on the echoes: points down at centre (flat, with a small dead zone), duller to the left, brighter to the right |
@@ -39,6 +39,15 @@ There's no tape and no erase head. A spinning disc in a can of oil holds the sig
 | Safety | Limits the wet output to the Ceiling. The runaway still happens inside the can; it just can't bury the mix. On by default |
 | Tails | Bypass lets the repeats ring out |
 | Effect | Bypass, click-free; dry at unity |
+
+### Tempo and tap tempo
+
+Time can follow the pedalboard tempo, all from MOD's settings:
+
+1. In the plugin's settings (its gear icon), open the addressing for Time, tick **Tempo** and pick a note value (1/4, 1/8., 1/8T …). Time now tracks the BPM.
+2. For tap tempo, assign a footswitch to the pedalboard **BPM** in tap-tempo mode. Tap, and the delay follows.
+
+Tempo changes turn the motor, so the echoes glide to the new time with a pitch bend, like the real thing. Times outside 40 ms to 2 s are clamped.
 
 Mono in. **Mix Out** carries dry + wet; **Wet Out** carries 100% wet. They are not a stereo pair.
 

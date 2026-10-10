@@ -6,10 +6,29 @@ function (event, funcs) {
     //  - Time / Ceiling readouts: drawn here; click one to type a value (Enter = set,
     //    Esc = cancel). mod-ui does not echo values set from a script back to it,
     //    so the readout is updated here after setting.
+    //  - Time also takes tempo: "120bpm" (or "120b") sets a quarter note at 120 BPM;
+    //    add a division for other notes: "120b 1/8", "120b 1/8." (dotted), "120b 1/8t"
+    //    (triplet). "1.2s" works too. The readout always shows ms.
     var icon = event.icon;
     var RANGE = { time: [40, 2000], ceiling: [-24, 0] };
     var UNIT = { time: 'ms', ceiling: 'dB' };
 
+    // "500", "500ms", "1.2s", "120bpm", "120b 1/8", "120b 1/8.", "120b 1/8t" -> ms (NaN if unreadable)
+    function parseTime(txt) {
+        var t = String(txt).toLowerCase().replace(/,/g, '.').replace(/\s+/g, '');
+        var m = /^(\d*\.?\d+)b(?:pm)?(?:(\d+)\/(\d+)([.t])?)?$/.exec(t);
+        if (m) {
+            var bpm = parseFloat(m[1]);
+            if (!(bpm > 0)) return NaN;
+            var notes = m[2] ? (4 * parseFloat(m[2]) / parseFloat(m[3])) : 1;   // in quarter notes
+            if (m[4] == '.') notes *= 1.5;
+            if (m[4] == 't') notes *= 2 / 3;
+            return 60000 / bpm * notes;
+        }
+        m = /^(\d*\.?\d+)(ms|s)?$/.exec(t);
+        if (!m) return NaN;
+        return parseFloat(m[1]) * (m[2] == 's' ? 1000 : 1);
+    }
     function cap(sel, x) {
         icon.find(sel).css('top', (248 - 204 * Math.max(0, Math.min(1, x))) + 'px');
     }
@@ -33,7 +52,9 @@ function (event, funcs) {
         if (box.find('input').length) return;
         var cur = box.data('v');
         var done = false;
-        var input = $('<input type="text" inputmode="decimal" autocomplete="off">').val(Math.round(cur));
+        // Time takes letters (bpm, s), so it gets the full keyboard
+        var input = $('<input type="text" autocomplete="off" autocapitalize="off" spellcheck="false">')
+            .attr('inputmode', sym == 'time' ? 'text' : 'decimal').val(Math.round(cur));
         function outside(e) {
             if (e.target !== input[0]) finish(true);
         }
@@ -44,7 +65,7 @@ function (event, funcs) {
             document.removeEventListener('mousedown', outside, true);
             document.removeEventListener('touchstart', outside, true);
             document.removeEventListener('pointerdown', outside, true);
-            var v = parseFloat(input.val());
+            var v = sym == 'time' ? parseTime(input.val()) : parseFloat(input.val());
             input.remove();
             if (commit && !isNaN(v)) {
                 v = Math.max(RANGE[sym][0], Math.min(RANGE[sym][1], v));

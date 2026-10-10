@@ -6,7 +6,8 @@
 Compares every port (index, symbol, name, ranges, units, properties,
 designation) and the plugin version. Audio port names and symbols differ by
 design (DPF writes lv2_audio_in_1 ...) and are ignored. Also ignored:
-mod:preferMomentaryOnByDefault, which DPF can't express. A custom unit
+mod:preferMomentaryOnByDefault and mod:tempoRelatedDynamicScalePoints,
+which DPF can't express. A custom unit
 (written to set a display format with units:render) matches the stock unit
 with the same symbol. Exit code 1 on any
 other difference. Needs: pip install rdflib
@@ -15,7 +16,8 @@ import sys
 import rdflib
 
 L = rdflib.Namespace('http://lv2plug.in/ns/lv2core#')
-IGNORE_PROPS = {'http://moddevices.com/ns/mod#preferMomentaryOnByDefault'}
+IGNORE_PROPS = {'http://moddevices.com/ns/mod#preferMomentaryOnByDefault',
+                'http://moddevices.com/ns/mod#tempoRelatedDynamicScalePoints'}
 U = rdflib.Namespace('http://lv2plug.in/ns/extensions/units#')
 # stock unit -> its symbol, so a custom unit (written to set a display format,
 # e.g. units:render "%.0fms") matches the stock unit DPF writes

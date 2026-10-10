@@ -162,18 +162,26 @@ The standard rig (native, arm32, arm64; TTL vs DPF generator; lv2info; lv2host; 
 - [x] Tone 4.65 and 5.35 sound identical to 5 (centre detent)
 - [x] Face: preview renders the mockup; every control driven like a user (drags, clicks, typed values) behaves as specified
 - [x] 1.0.6 on the Duo: readouts would not accept typing; fixed in 1.0.7
-- [ ] 1.0.8 on the Duo: the face in the real mod-ui (readout formats, sliders, script), and the CPU meter
+- [ ] 1.0.8/1.0.9 on the Duo: the face in the real mod-ui (readout formats, sliders, script), and the CPU meter
+- [ ] 1.0.9 on the Duo: Time synced to tempo (addressing dialog, Tempo + note value), footswitch tap tempo on the global BPM, typing `120b 1/8.` into the Time readout
 
 ## Face notes
 
 The real face (1.0.5), 650×400, artwork by Niels; positions fitted pixel by pixel to his v2 mockup.
 
 - **Knobs (8):** one 128-frame strip, sweeping from about 11 o'clock down through 6 to about 1 o'clock. Tone sits straight down at centre, with a 4.6–5.4 flat zone in the DSP.
-- **Readouts:** Time and Ceiling, drawn by the face script ("350MS", "-6DB"). Clicking one opens a real text box; Enter or a click elsewhere applies the value through `funcs.set_port_value`, Esc cancels. (mod-ui's built-in `input-control-value` editing didn't accept typing on the Duo in 1.0.6.) The TTL keeps custom unit formats for MOD's own displays.
+- **Readouts:** Time and Ceiling, drawn by the face script ("350MS", "-6DB"). Time also accepts tempo text (`120bpm`, `120b 1/8`, `120b 1/8.`, `120b 1/8t`) and seconds (`1.2s`), converted to ms in the script; Time's text box uses the full keyboard for that. Clicking one opens a real text box; Enter or a click elsewhere applies the value through `funcs.set_port_value`, Esc cancels. (mod-ui's built-in `input-control-value` editing didn't accept typing on the Duo in 1.0.6.) The TTL keeps custom unit formats for MOD's own displays.
 - **Switches:** Safety, Tails, Hold and Effect. Each is one element covering the button and its LED, with an [off | on] strip, so the LED needs no script.
 - **Sliders:** Disc Size (left) and Mix (right) are invisible 201-frame drag zones (200 px of drag for the full range). The face script moves the caps (y 248 at zero, just above the labels, to y 44 at max: 204 px, about 1:1 with mod-ui's 200 px drag) and scales the can from its centre (y 196): 140 px tall at 0, 280 px at 10.
 - **Resolution:** 2x images throughout, drawn at 1x size with `background-size`; layout in 1x CSS pixels.
 - **Weight:** about 770 KB (panel JPEG untouched, 256-colour knob strip and screenshot).
+
+## Tempo (1.0.9)
+
+- **Sync:** Time carries `mod:tempoRelatedDynamicScalePoints` with its ms unit, so mod-ui offers **Tempo** + note value in Time's addressing dialog and sets Time from the pedalboard BPM. No `mod:hasStrictBounds`: with it, mod-ui would hide every note value that falls outside 40–2000 ms at any BPM from 20 to 280 (even 1/4); without it, all are offered and the plugin clamps.
+- **Tap tempo:** mod-ui only offers the footswitch tap-tempo mode on the global `:bpm` port (`hardware.js`: `port.symbol === ":bpm"` and `tapTempo`), never on a plugin port. So tap tempo is the global BPM's tap, and Time follows through sync. A plugin-side Tap trigger was rejected: a plugin can't move its own input port, so the knob and readout would show a time that isn't playing.
+- **DSP:** unchanged. A synced change is a Time change, so the motor's inertia glides the read point and bends pitch.
+- **Readout input:** tempo text is parsed by the face script (`60000 / BPM × quarter notes`, dotted ×1.5, triplet ×2/3).
 
 ## Parked and open
 
