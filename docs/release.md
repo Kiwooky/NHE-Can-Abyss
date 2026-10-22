@@ -15,7 +15,7 @@ As of October 2026, MOD publishes community plugins in three steps.
 | mod-plugin-builder package | Written; first builder.mod.audio build pending |
 | Pedal face | Real artwork in 1.0.5; to check in mod-ui on the Duo |
 | Manual PDF + `modgui:documentation` line | To do |
-| Factory presets | To do |
+| Factory presets | 7 in 1.0.10 (from the Duo) |
 | Tested on Duo | 1.0.0 played; 1.0.3 to check (incl. CPU meter) |
 | Tested on Duo X and Dwarf | To do (forum volunteers) |
 | Assignments: footswitches, knobs, MIDI | To check on hardware |

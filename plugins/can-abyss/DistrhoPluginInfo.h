@@ -10,22 +10,31 @@
 #define DISTRHO_PLUGIN_NUM_INPUTS   1
 #define DISTRHO_PLUGIN_NUM_OUTPUTS  2
 
+// Port order is MOD's settings-panel order: grouped, and within a group by index.
 enum Parameters {
-    kTime = 0,
+    kTime = 0,      // Delay
     kRepeat,
-    kReverb,
-    kTone,
-    kWobble,
-    kDiscSize,
-    kWear,
-    kMix,
-    kSag,
-    kCeiling,
     kHold,
+    kReverb,        // Colour
+    kTone,
+    kDiscSize,
+    kWobble,        // Vibe
+    kWear,
+    kSag,
+    kCeiling,       // Mix
     kSafety,
     kTails,
+    kMix,
     kBypass,
     kParameterCount
+};
+
+enum PortGroups {
+    kGroupDelay = 0,
+    kGroupColour,
+    kGroupVibe,
+    kGroupMix,
+    kGroupCount
 };
 
 #endif

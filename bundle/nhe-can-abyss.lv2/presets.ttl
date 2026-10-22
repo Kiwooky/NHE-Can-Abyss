@@ -1,0 +1,297 @@
+@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .
+@prefix pset: <http://lv2plug.in/ns/ext/presets#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<https://github.com/Kiwooky/NHE-Can-Abyss#preset-10_to_Midnight>
+    a pset:Preset ;
+    lv2:appliesTo <https://github.com/Kiwooky/NHE-Can-Abyss> ;
+    rdfs:label "10 to Midnight" ;
+    lv2:port [
+        lv2:symbol "ceiling" ;
+        pset:value -13.559055
+    ] , [
+        lv2:symbol "disc_size" ;
+        pset:value 7.5
+    ] , [
+        lv2:symbol "mix" ;
+        pset:value 29.25
+    ] , [
+        lv2:symbol "repeat" ;
+        pset:value 2.73622
+    ] , [
+        lv2:symbol "reverb" ;
+        pset:value 4.901575
+    ] , [
+        lv2:symbol "safety" ;
+        pset:value 1
+    ] , [
+        lv2:symbol "sag" ;
+        pset:value 3.937008
+    ] , [
+        lv2:symbol "tails" ;
+        pset:value 1
+    ] , [
+        lv2:symbol "time" ;
+        pset:value 654.768494
+    ] , [
+        lv2:symbol "tone" ;
+        pset:value 6.948819
+    ] , [
+        lv2:symbol "wear" ;
+        pset:value 4.311024
+    ] , [
+        lv2:symbol "wobble" ;
+        pset:value 0.334646
+    ] .
+
+<https://github.com/Kiwooky/NHE-Can-Abyss#preset-420_all_the_way>
+    a pset:Preset ;
+    lv2:appliesTo <https://github.com/Kiwooky/NHE-Can-Abyss> ;
+    rdfs:label "420 all the way" ;
+    lv2:port [
+        lv2:symbol "ceiling" ;
+        pset:value -13.559055
+    ] , [
+        lv2:symbol "disc_size" ;
+        pset:value 2.0
+    ] , [
+        lv2:symbol "mix" ;
+        pset:value 42.0
+    ] , [
+        lv2:symbol "repeat" ;
+        pset:value 4.0
+    ] , [
+        lv2:symbol "reverb" ;
+        pset:value 2.0
+    ] , [
+        lv2:symbol "safety" ;
+        pset:value 1
+    ] , [
+        lv2:symbol "sag" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "tails" ;
+        pset:value 1
+    ] , [
+        lv2:symbol "time" ;
+        pset:value 420.0
+    ] , [
+        lv2:symbol "tone" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "wear" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "wobble" ;
+        pset:value 4.0
+    ] .
+
+<https://github.com/Kiwooky/NHE-Can-Abyss#preset-Over_the_highway>
+    a pset:Preset ;
+    lv2:appliesTo <https://github.com/Kiwooky/NHE-Can-Abyss> ;
+    rdfs:label "Over the highway" ;
+    lv2:port [
+        lv2:symbol "ceiling" ;
+        pset:value -13.559055
+    ] , [
+        lv2:symbol "disc_size" ;
+        pset:value 6.175
+    ] , [
+        lv2:symbol "mix" ;
+        pset:value 29.25
+    ] , [
+        lv2:symbol "repeat" ;
+        pset:value 3.405512
+    ] , [
+        lv2:symbol "reverb" ;
+        pset:value 4.429134
+    ] , [
+        lv2:symbol "safety" ;
+        pset:value 1
+    ] , [
+        lv2:symbol "sag" ;
+        pset:value 3.602362
+    ] , [
+        lv2:symbol "tails" ;
+        pset:value 1
+    ] , [
+        lv2:symbol "time" ;
+        pset:value 750.0
+    ] , [
+        lv2:symbol "tone" ;
+        pset:value 8.700787
+    ] , [
+        lv2:symbol "wear" ;
+        pset:value 5.866142
+    ] , [
+        lv2:symbol "wobble" ;
+        pset:value 0.059055
+    ] .
+
+<https://github.com/Kiwooky/NHE-Can-Abyss#preset-Tea_Age_See>
+    a pset:Preset ;
+    lv2:appliesTo <https://github.com/Kiwooky/NHE-Can-Abyss> ;
+    rdfs:label "Tea Age See" ;
+    lv2:port [
+        lv2:symbol "ceiling" ;
+        pset:value -13.559055
+    ] , [
+        lv2:symbol "disc_size" ;
+        pset:value 0.1
+    ] , [
+        lv2:symbol "mix" ;
+        pset:value 37.5
+    ] , [
+        lv2:symbol "repeat" ;
+        pset:value 6.279528
+    ] , [
+        lv2:symbol "reverb" ;
+        pset:value 7.185039
+    ] , [
+        lv2:symbol "safety" ;
+        pset:value 1
+    ] , [
+        lv2:symbol "sag" ;
+        pset:value 3.602362
+    ] , [
+        lv2:symbol "tails" ;
+        pset:value 1
+    ] , [
+        lv2:symbol "time" ;
+        pset:value 718.159546
+    ] , [
+        lv2:symbol "tone" ;
+        pset:value 0.03937
+    ] , [
+        lv2:symbol "wear" ;
+        pset:value 6.023622
+    ] , [
+        lv2:symbol "wobble" ;
+        pset:value 0.059055
+    ] .
+
+<https://github.com/Kiwooky/NHE-Can-Abyss#preset-The_haunting>
+    a pset:Preset ;
+    lv2:appliesTo <https://github.com/Kiwooky/NHE-Can-Abyss> ;
+    rdfs:label "The haunting" ;
+    lv2:port [
+        lv2:symbol "ceiling" ;
+        pset:value -13.559055
+    ] , [
+        lv2:symbol "disc_size" ;
+        pset:value 10.0
+    ] , [
+        lv2:symbol "mix" ;
+        pset:value 42.0
+    ] , [
+        lv2:symbol "repeat" ;
+        pset:value 4.0
+    ] , [
+        lv2:symbol "reverb" ;
+        pset:value 2.0
+    ] , [
+        lv2:symbol "safety" ;
+        pset:value 1
+    ] , [
+        lv2:symbol "sag" ;
+        pset:value 10.0
+    ] , [
+        lv2:symbol "tails" ;
+        pset:value 1
+    ] , [
+        lv2:symbol "time" ;
+        pset:value 1000.072266
+    ] , [
+        lv2:symbol "tone" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "wear" ;
+        pset:value 10.0
+    ] , [
+        lv2:symbol "wobble" ;
+        pset:value 10.0
+    ] .
+
+<https://github.com/Kiwooky/NHE-Can-Abyss#preset-Trippin_in_the_bodega>
+    a pset:Preset ;
+    lv2:appliesTo <https://github.com/Kiwooky/NHE-Can-Abyss> ;
+    rdfs:label "Trippin in the bodega" ;
+    lv2:port [
+        lv2:symbol "ceiling" ;
+        pset:value -13.559055
+    ] , [
+        lv2:symbol "disc_size" ;
+        pset:value 3.025
+    ] , [
+        lv2:symbol "mix" ;
+        pset:value 29.25
+    ] , [
+        lv2:symbol "repeat" ;
+        pset:value 3.405512
+    ] , [
+        lv2:symbol "reverb" ;
+        pset:value 4.429134
+    ] , [
+        lv2:symbol "safety" ;
+        pset:value 1
+    ] , [
+        lv2:symbol "sag" ;
+        pset:value 3.602362
+    ] , [
+        lv2:symbol "tails" ;
+        pset:value 1
+    ] , [
+        lv2:symbol "time" ;
+        pset:value 406.193695
+    ] , [
+        lv2:symbol "tone" ;
+        pset:value 8.700787
+    ] , [
+        lv2:symbol "wear" ;
+        pset:value 2.559055
+    ] , [
+        lv2:symbol "wobble" ;
+        pset:value 0.059055
+    ] .
+
+<https://github.com/Kiwooky/NHE-Can-Abyss#preset-Witching_hour>
+    a pset:Preset ;
+    lv2:appliesTo <https://github.com/Kiwooky/NHE-Can-Abyss> ;
+    rdfs:label "Witching hour" ;
+    lv2:port [
+        lv2:symbol "ceiling" ;
+        pset:value -13.559055
+    ] , [
+        lv2:symbol "disc_size" ;
+        pset:value 0.0
+    ] , [
+        lv2:symbol "mix" ;
+        pset:value 41.5
+    ] , [
+        lv2:symbol "repeat" ;
+        pset:value 3.129921
+    ] , [
+        lv2:symbol "reverb" ;
+        pset:value 10.0
+    ] , [
+        lv2:symbol "safety" ;
+        pset:value 1
+    ] , [
+        lv2:symbol "sag" ;
+        pset:value 10.0
+    ] , [
+        lv2:symbol "tails" ;
+        pset:value 1
+    ] , [
+        lv2:symbol "time" ;
+        pset:value 587.848999
+    ] , [
+        lv2:symbol "tone" ;
+        pset:value 0.03937
+    ] , [
+        lv2:symbol "wear" ;
+        pset:value 9.96063
+    ] , [
+        lv2:symbol "wobble" ;
+        pset:value 10.0
+    ] .

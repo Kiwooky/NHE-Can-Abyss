@@ -164,7 +164,7 @@ protected:
     const char* getMaker()       const override { return "New Horizon Electronics"; }
     const char* getHomePage()    const override { return "https://github.com/Kiwooky/NHE-Can-Abyss"; }
     const char* getLicense()     const override { return "MIT"; }
-    uint32_t    getVersion()     const override { return d_version(1, 0, 9); }
+    uint32_t    getVersion()     const override { return d_version(1, 0, 10); }
     int64_t     getUniqueId()    const override { return d_cconst('C', 'A', 'B', 'Y'); }
 
     void initParameter(uint32_t index, Parameter& p) override
@@ -227,6 +227,24 @@ protected:
         case kBypass:
             p.initDesignation(kParameterDesignationBypass);
             break;
+        }
+
+        switch (index) {
+        case kTime: case kRepeat: case kHold:        p.groupId = kGroupDelay;  break;
+        case kReverb: case kTone: case kDiscSize:    p.groupId = kGroupColour; break;
+        case kWobble: case kWear: case kSag:         p.groupId = kGroupVibe;   break;
+        case kCeiling: case kSafety: case kTails:
+        case kMix:                                   p.groupId = kGroupMix;    break;
+        }
+    }
+
+    void initPortGroup(uint32_t groupId, PortGroup& g) override
+    {
+        switch (groupId) {
+        case kGroupDelay:  g.name = "Delay";  g.symbol = "delay";  break;
+        case kGroupColour: g.name = "Colour"; g.symbol = "colour"; break;
+        case kGroupVibe:   g.name = "Vibe";   g.symbol = "vibe";   break;
+        case kGroupMix:    g.name = "Mix";    g.symbol = "output"; break;
         }
     }
 

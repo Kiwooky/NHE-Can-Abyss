@@ -49,6 +49,10 @@ Time can follow the pedalboard tempo, all from MOD's settings:
 
 Tempo changes turn the motor, so the echoes glide to the new time with a pitch bend, like the real thing. Times outside 40 ms to 2 s are clamped.
 
+### Presets
+
+Seven factory presets come with it, from late-night jams on a Duo: **10 to Midnight**, **420 all the way**, **Over the highway**, **Tea Age See**, **The haunting**, **Trippin in the bodega** and **Witching hour**. None of them engage Hold.
+
 Mono in. **Mix Out** carries dry + wet; **Wet Out** carries 100% wet. They are not a stereo pair.
 
 ## Install
@@ -73,7 +77,7 @@ The design, sources and mappings are in [docs/spec.md](docs/spec.md). Testing, t
 | Path | Contents |
 | --- | --- |
 | `plugins/can-abyss/` | DSP source (C++, DPF) |
-| `bundle/nhe-can-abyss.lv2/` | LV2 metadata, pedal face (template, CSS, script, images) |
+| `bundle/nhe-can-abyss.lv2/` | LV2 metadata, factory presets (`presets.ttl`), pedal face (template, CSS, script, images) |
 | `assets/source/` | Source artwork for the face (1x and 2x originals) |
 | `mod-plugin-builder/` | Package file for MOD's builder and plugin store |
 | `tools/` | Offline LV2 test host, audio test suite, CPU benchmark, face renderer |

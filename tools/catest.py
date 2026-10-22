@@ -13,9 +13,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SO = os.environ.get('CA_SO', os.path.join(ROOT, 'bin', 'nhe-can-abyss.lv2', 'nhe-can-abyss_dsp.so'))
 HOST = os.environ.get('CA_HOST', os.path.join(ROOT, 'tools', 'lv2host')).split()
 
-# control ports in index order (3..18)
-ORDER = ['time', 'repeat', 'reverb', 'tone', 'wobble', 'disc_size', 'wear', 'mix', 'sag', 'ceiling',
-         'hold', 'safety', 'tails', 'enabled']
+# control ports in index order (3..16): MOD's settings-panel order, grouped
+ORDER = ['time', 'repeat', 'hold', 'reverb', 'tone', 'disc_size', 'wobble', 'wear', 'sag',
+         'ceiling', 'safety', 'tails', 'mix', 'enabled']
 DEF = dict(time=350, repeat=3, reverb=5, tone=5, wobble=5, disc_size=5, wear=3, mix=50, sag=0, ceiling=-6,
            hold=0, safety=1, tails=1, enabled=1)
 PORT = {k: 3 + i for i, k in enumerate(ORDER)}

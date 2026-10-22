@@ -2,6 +2,7 @@
 @prefix foaf:  <http://xmlns.com/foaf/0.1/> .
 @prefix lv2:   <http://lv2plug.in/ns/lv2core#> .
 @prefix mod:   <http://moddevices.com/ns/mod#> .
+@prefix pg:    <http://lv2plug.in/ns/ext/port-groups#> .
 @prefix pprops: <http://lv2plug.in/ns/ext/port-props#> .
 @prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
@@ -17,7 +18,7 @@
     ] ;
     rdfs:comment "Electrostatic oil can delay modelled on 1960s Tel-Ray / Morley units. Leftover charge circles the disc every revolution (Reverb), the motor sets the time so sweeps bend pitch, and the warble follows disc speed. Modern mods: Disc Size, Wear, Sag and Hold." ;
     lv2:minorVersion 2 ;
-    lv2:microVersion 9 ;
+    lv2:microVersion 10 ;
     lv2:optionalFeature lv2:hardRTCapable ;
     lv2:requiredFeature <http://lv2plug.in/ns/ext/options#options> ,
                         <http://lv2plug.in/ns/ext/urid#map> ;
@@ -41,6 +42,7 @@
         a lv2:InputPort , lv2:ControlPort ;
         lv2:index 3 ;
         lv2:symbol "time" ;
+        pg:group <https://github.com/Kiwooky/NHE-Can-Abyss#portGroup_delay> ;
         lv2:name "Time" ;
         lv2:default 350 ;
         lv2:minimum 40 ;
@@ -56,6 +58,7 @@
         a lv2:InputPort , lv2:ControlPort ;
         lv2:index 4 ;
         lv2:symbol "repeat" ;
+        pg:group <https://github.com/Kiwooky/NHE-Can-Abyss#portGroup_delay> ;
         lv2:name "Repeat" ;
         lv2:default 3 ;
         lv2:minimum 0 ;
@@ -63,24 +66,28 @@
     ] , [
         a lv2:InputPort , lv2:ControlPort ;
         lv2:index 5 ;
+        lv2:symbol "hold" ;
+        pg:group <https://github.com/Kiwooky/NHE-Can-Abyss#portGroup_delay> ;
+        lv2:name "Hold" ;
+        lv2:default 0 ;
+        lv2:minimum 0 ;
+        lv2:maximum 1 ;
+        lv2:portProperty lv2:integer , lv2:toggled
+    ] , [
+        a lv2:InputPort , lv2:ControlPort ;
+        lv2:index 6 ;
         lv2:symbol "reverb" ;
+        pg:group <https://github.com/Kiwooky/NHE-Can-Abyss#portGroup_colour> ;
         lv2:name "Reverb" ;
         lv2:default 5 ;
         lv2:minimum 0 ;
         lv2:maximum 10
     ] , [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 6 ;
-        lv2:symbol "tone" ;
-        lv2:name "Tone" ;
-        lv2:default 5 ;
-        lv2:minimum 0 ;
-        lv2:maximum 10
-    ] , [
-        a lv2:InputPort , lv2:ControlPort ;
         lv2:index 7 ;
-        lv2:symbol "wobble" ;
-        lv2:name "Wobble" ;
+        lv2:symbol "tone" ;
+        pg:group <https://github.com/Kiwooky/NHE-Can-Abyss#portGroup_colour> ;
+        lv2:name "Tone" ;
         lv2:default 5 ;
         lv2:minimum 0 ;
         lv2:maximum 10
@@ -88,6 +95,7 @@
         a lv2:InputPort , lv2:ControlPort ;
         lv2:index 8 ;
         lv2:symbol "disc_size" ;
+        pg:group <https://github.com/Kiwooky/NHE-Can-Abyss#portGroup_colour> ;
         lv2:name "Disc Size" ;
         lv2:default 5 ;
         lv2:minimum 0 ;
@@ -95,24 +103,26 @@
     ] , [
         a lv2:InputPort , lv2:ControlPort ;
         lv2:index 9 ;
+        lv2:symbol "wobble" ;
+        pg:group <https://github.com/Kiwooky/NHE-Can-Abyss#portGroup_vibe> ;
+        lv2:name "Wobble" ;
+        lv2:default 5 ;
+        lv2:minimum 0 ;
+        lv2:maximum 10
+    ] , [
+        a lv2:InputPort , lv2:ControlPort ;
+        lv2:index 10 ;
         lv2:symbol "wear" ;
+        pg:group <https://github.com/Kiwooky/NHE-Can-Abyss#portGroup_vibe> ;
         lv2:name "Wear" ;
         lv2:default 3 ;
         lv2:minimum 0 ;
         lv2:maximum 10
     ] , [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 10 ;
-        lv2:symbol "mix" ;
-        lv2:name "Mix" ;
-        lv2:default 50 ;
-        lv2:minimum 0 ;
-        lv2:maximum 100 ;
-        units:unit units:pc
-    ] , [
-        a lv2:InputPort , lv2:ControlPort ;
         lv2:index 11 ;
         lv2:symbol "sag" ;
+        pg:group <https://github.com/Kiwooky/NHE-Can-Abyss#portGroup_vibe> ;
         lv2:name "Sag" ;
         lv2:default 0 ;
         lv2:minimum 0 ;
@@ -121,6 +131,7 @@
         a lv2:InputPort , lv2:ControlPort ;
         lv2:index 12 ;
         lv2:symbol "ceiling" ;
+        pg:group <https://github.com/Kiwooky/NHE-Can-Abyss#portGroup_output> ;
         lv2:name "Ceiling" ;
         lv2:default -6 ;
         lv2:minimum -24 ;
@@ -134,16 +145,8 @@
     ] , [
         a lv2:InputPort , lv2:ControlPort ;
         lv2:index 13 ;
-        lv2:symbol "hold" ;
-        lv2:name "Hold" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 1 ;
-        lv2:portProperty lv2:integer , lv2:toggled
-    ] , [
-        a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 14 ;
         lv2:symbol "safety" ;
+        pg:group <https://github.com/Kiwooky/NHE-Can-Abyss#portGroup_output> ;
         lv2:name "Safety" ;
         lv2:default 1 ;
         lv2:minimum 0 ;
@@ -151,13 +154,24 @@
         lv2:portProperty lv2:integer , lv2:toggled
     ] , [
         a lv2:InputPort , lv2:ControlPort ;
-        lv2:index 15 ;
+        lv2:index 14 ;
         lv2:symbol "tails" ;
+        pg:group <https://github.com/Kiwooky/NHE-Can-Abyss#portGroup_output> ;
         lv2:name "Tails" ;
         lv2:default 1 ;
         lv2:minimum 0 ;
         lv2:maximum 1 ;
         lv2:portProperty lv2:integer , lv2:toggled
+    ] , [
+        a lv2:InputPort , lv2:ControlPort ;
+        lv2:index 15 ;
+        lv2:symbol "mix" ;
+        pg:group <https://github.com/Kiwooky/NHE-Can-Abyss#portGroup_output> ;
+        lv2:name "Mix" ;
+        lv2:default 50 ;
+        lv2:minimum 0 ;
+        lv2:maximum 100 ;
+        units:unit units:pc
     ] , [
         a lv2:InputPort , lv2:ControlPort ;
         lv2:index 16 ;
@@ -169,3 +183,27 @@
         lv2:portProperty lv2:integer , lv2:toggled ;
         lv2:designation lv2:enabled
     ] .
+
+<https://github.com/Kiwooky/NHE-Can-Abyss#portGroup_delay>
+    a pg:InputGroup ;
+    lv2:index 0 ;
+    lv2:name "Delay" ;
+    lv2:symbol "delay" .
+
+<https://github.com/Kiwooky/NHE-Can-Abyss#portGroup_colour>
+    a pg:InputGroup ;
+    lv2:index 1 ;
+    lv2:name "Colour" ;
+    lv2:symbol "colour" .
+
+<https://github.com/Kiwooky/NHE-Can-Abyss#portGroup_vibe>
+    a pg:InputGroup ;
+    lv2:index 2 ;
+    lv2:name "Vibe" ;
+    lv2:symbol "vibe" .
+
+<https://github.com/Kiwooky/NHE-Can-Abyss#portGroup_output>
+    a pg:InputGroup ;
+    lv2:index 3 ;
+    lv2:name "Mix" ;
+    lv2:symbol "output" .

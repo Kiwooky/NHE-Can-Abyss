@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.10 — 2026-10-22
+
+- **Seven factory presets**, dialled in on a Duo by Niels: 10 to Midnight, 420 all the way, Over the highway, Tea Age See, The haunting, Trippin in the bodega, Witching hour. They load from the top of the plugin's preset list and can't be overwritten. Hold is left out of every preset, so loading one never freezes the disc; Safety and Tails are included (on in all seven).
+- **Grouped settings.** The plugin's settings panel now shows the controls in four groups, in this order: **Delay** (Time, Repeat, Hold), **Colour** (Reverb, Tone, Disc Size), **Vibe** (Wobble, Wear, Sag) and **Mix** (Ceiling, Safety, Tails, Mix). The ports were renumbered to match, because MOD lists each group's controls by port number. Symbols are unchanged, so saved pedalboards, presets and footswitch assignments still load. Nothing changes on the face or in the sound.
+- `tools/ttlcmp.py` updated from the playbook (0.7.1): it now compares port groups.
+
 ## 1.0.9 — 2026-10-11
 
 - **Tempo sync and tap tempo, through MOD's own settings.** Time is now tempo-aware (`mod:tempoRelatedDynamicScalePoints`). In Time's addressing dialog, tick **Tempo** and pick a note value (1/4, 1/8., 1/8T …); Time then follows the pedalboard BPM. Tap tempo works through the global BPM: assign a footswitch to BPM in tap-tempo mode. Nothing changes on the face, and the DSP is untouched: a tempo change moves the motor, so the echoes glide to the new time with the usual pitch bend.

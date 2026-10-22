@@ -61,29 +61,31 @@ The motor sets where the read point sits, so Time, Wobble, Disc Size, Wear and S
 
 ## Ports
 
-Mono in, two outs, 14 controls in enum order. Hand-written TTL must match this table index for index. (1.0.1 removed the noise ports and added Wear; 1.0.3 added Ceiling and Safety; ports freeze before the first public release.)
+Mono in, two outs, 14 controls in enum order, which is also the order MOD's settings panel shows them in: grouped, then by index. Hand-written TTL must match this table index for index. (1.0.1 removed the noise ports and added Wear; 1.0.3 added Ceiling and Safety; 1.0.10 renumbered into groups. MOD saves pedalboards, presets and assignments by symbol, so renumbering breaks nothing there; ports freeze before the first public release.)
 
-| # | Symbol | Name | Range | Default | Notes |
-| --- | --- | --- | --- | --- | --- |
-| 0 | `in` | Audio In | audio |  | Mono |
-| 1 | `out_mix` | Mix Out | audio |  | Dry + wet by Mix |
-| 2 | `out_wet` | Wet Out | audio |  | 100% wet; labelled on face |
-| 3 | `time` | Time | 40–2000 ms | 350 | Logarithmic; 747 marked |
-| 4 | `repeat` | Repeat | 0–10 | 3 | Regen, read → write; can run away |
-| 5 | `reverb` | Reverb | 0–10 | 5 | Residual charge per revolution |
-| 6 | `tone` | Tone | 0–10 | 5 | Tilt EQ on wet; 4.6–5.4 flat |
-| 7 | `wobble` | Wobble | 0–10 | 5 | 5 = stock warble |
-| 8 | `disc_size` | Disc Size | 0–10 | 5 | 5 = stock; macro |
-| 9 | `wear` | Wear | 0–10 | 3 | 0 = new disc; 3 = stock |
-| 10 | `mix` | Mix | 0–100 % | 50 | Mix Out only |
-| 11 | `sag` | Sag | 0–10 | 0 | 0 = off |
-| 12 | `ceiling` | Ceiling | −24–0 dB | −6 | Wet output limit (Safety on) |
-| 13 | `hold` | Hold | toggle | 0 | Latching |
-| 14 | `safety` | Safety | toggle | 1 | Limiter on the wet output |
-| 15 | `tails` | Tails | toggle | 1 | Bypass keeps repeats |
-| 16 | `lv2_enabled` | Enabled | bypass | 1 | `lv2:enabled` designation, last |
+| # | Symbol | Name | Group | Range | Default | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0 | `in` | Audio In | | audio |  | Mono |
+| 1 | `out_mix` | Mix Out | | audio |  | Dry + wet by Mix |
+| 2 | `out_wet` | Wet Out | | audio |  | 100% wet; labelled on face |
+| 3 | `time` | Time | Delay | 40–2000 ms | 350 | Logarithmic; 747 marked; tempo-syncable |
+| 4 | `repeat` | Repeat | Delay | 0–10 | 3 | Regen, read → write; can run away |
+| 5 | `hold` | Hold | Delay | toggle | 0 | Latching; left out of presets |
+| 6 | `reverb` | Reverb | Colour | 0–10 | 5 | Residual charge per revolution |
+| 7 | `tone` | Tone | Colour | 0–10 | 5 | Tilt EQ on wet; 4.6–5.4 flat |
+| 8 | `disc_size` | Disc Size | Colour | 0–10 | 5 | 5 = stock; macro |
+| 9 | `wobble` | Wobble | Vibe | 0–10 | 5 | 5 = stock warble |
+| 10 | `wear` | Wear | Vibe | 0–10 | 3 | 0 = new disc; 3 = stock |
+| 11 | `sag` | Sag | Vibe | 0–10 | 0 | 0 = off |
+| 12 | `ceiling` | Ceiling | Mix | −24–0 dB | −6 | Wet output limit (Safety on) |
+| 13 | `safety` | Safety | Mix | toggle | 1 | Limiter on the wet output |
+| 14 | `tails` | Tails | Mix | toggle | 1 | Bypass keeps repeats |
+| 15 | `mix` | Mix | Mix | 0–100 % | 50 | Mix Out only |
+| 16 | `lv2_enabled` | Enabled | | bypass | 1 | `lv2:enabled` designation, last |
 
-Defaults for Repeat, Reverb, Tone and Mix are placeholders until tuned by ear. Version `d_version(1,0,8)` = minorVersion 2, microVersion 8.
+**Port groups** (`pg:InputGroup`, ordered by the group's `lv2:index`, which DPF can't write and is added by hand): Delay (`delay`), Colour (`colour`), Vibe (`vibe`), Mix (`output`; the symbol differs from the Mix port's to keep them apart).
+
+Defaults for Repeat, Reverb, Tone and Mix are placeholders until tuned by ear. Version `d_version(1,0,10)` = minorVersion 2, microVersion 10.
 
 ## Mappings (all guesses)
 

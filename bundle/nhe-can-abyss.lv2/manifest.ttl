@@ -1,3 +1,4 @@
+@prefix pset: <http://lv2plug.in/ns/ext/presets#> .
 @prefix lv2:  <http://lv2plug.in/ns/lv2core#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
@@ -5,3 +6,46 @@
     a lv2:Plugin , lv2:DelayPlugin ;
     lv2:binary <nhe-can-abyss_dsp.so> ;
     rdfs:seeAlso <nhe-can-abyss.ttl> , <modgui.ttl> .
+
+# Factory presets
+<https://github.com/Kiwooky/NHE-Can-Abyss#preset-10_to_Midnight>
+    a pset:Preset ;
+    lv2:appliesTo <https://github.com/Kiwooky/NHE-Can-Abyss> ;
+    rdfs:label "10 to Midnight" ;
+    rdfs:seeAlso <presets.ttl> .
+
+<https://github.com/Kiwooky/NHE-Can-Abyss#preset-420_all_the_way>
+    a pset:Preset ;
+    lv2:appliesTo <https://github.com/Kiwooky/NHE-Can-Abyss> ;
+    rdfs:label "420 all the way" ;
+    rdfs:seeAlso <presets.ttl> .
+
+<https://github.com/Kiwooky/NHE-Can-Abyss#preset-Over_the_highway>
+    a pset:Preset ;
+    lv2:appliesTo <https://github.com/Kiwooky/NHE-Can-Abyss> ;
+    rdfs:label "Over the highway" ;
+    rdfs:seeAlso <presets.ttl> .
+
+<https://github.com/Kiwooky/NHE-Can-Abyss#preset-Tea_Age_See>
+    a pset:Preset ;
+    lv2:appliesTo <https://github.com/Kiwooky/NHE-Can-Abyss> ;
+    rdfs:label "Tea Age See" ;
+    rdfs:seeAlso <presets.ttl> .
+
+<https://github.com/Kiwooky/NHE-Can-Abyss#preset-The_haunting>
+    a pset:Preset ;
+    lv2:appliesTo <https://github.com/Kiwooky/NHE-Can-Abyss> ;
+    rdfs:label "The haunting" ;
+    rdfs:seeAlso <presets.ttl> .
+
+<https://github.com/Kiwooky/NHE-Can-Abyss#preset-Trippin_in_the_bodega>
+    a pset:Preset ;
+    lv2:appliesTo <https://github.com/Kiwooky/NHE-Can-Abyss> ;
+    rdfs:label "Trippin in the bodega" ;
+    rdfs:seeAlso <presets.ttl> .
+
+<https://github.com/Kiwooky/NHE-Can-Abyss#preset-Witching_hour>
+    a pset:Preset ;
+    lv2:appliesTo <https://github.com/Kiwooky/NHE-Can-Abyss> ;
+    rdfs:label "Witching hour" ;
+    rdfs:seeAlso <presets.ttl> .
