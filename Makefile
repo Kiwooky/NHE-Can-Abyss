@@ -2,6 +2,7 @@
 # Can-Abyss Delay - top-level build
 #
 #   make                      build bin/nhe-can-abyss.lv2 (DSP + TTL + pedal face)
+#   make NAME=<bundle name>   build another plugin in this repo (plugins/<name without nhe->)
 #   make install DESTDIR=...  install into $(DESTDIR)$(PREFIX)/lib/lv2
 #   make clean
 #
@@ -9,12 +10,14 @@
 # what mod-plugin-builder and builder.mod.audio pass in.
 
 PREFIX  ?= /usr/local
-BUNDLE  := nhe-can-abyss.lv2
+NAME    ?= nhe-can-abyss
+BUNDLE  := $(NAME).lv2
+PLUGDIR := plugins/$(patsubst nhe-%,%,$(NAME))
 
 all: plugin bundle
 
 plugin:
-	$(MAKE) -C plugins/can-abyss
+	$(MAKE) -C $(PLUGDIR)
 
 bundle: plugin
 	cp -r bundle/$(BUNDLE)/. bin/$(BUNDLE)/
@@ -24,7 +27,7 @@ install: all
 	cp -r bin/$(BUNDLE)/. $(DESTDIR)$(PREFIX)/lib/lv2/$(BUNDLE)/
 
 clean:
-	$(MAKE) -C plugins/can-abyss clean
+	$(MAKE) -C $(PLUGDIR) clean
 	rm -rf bin build
 
 .PHONY: all plugin bundle install clean
